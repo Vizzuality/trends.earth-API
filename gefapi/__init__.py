@@ -21,24 +21,20 @@ logging.basicConfig(
 )
 
 
-def create_application():
-    # Flask
-    application = Flask(__name__)
+# Flask App
+app = Flask(__name__)
 
-    # Config
-    logging.debug(SETTINGS)
-    application.config.from_object(SETTINGS)
-
-    # Routing
-    application.register_blueprint(endpoints, url_prefix='/api/v1')
-
-    return application
-
-
-app = create_application()
+# Config
+app.config.from_object(SETTINGS)
 app.config['SQLALCHEMY_DATABASE_URI'] = SETTINGS.get('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = SETTINGS.get('SECRET_KEY')
+
+# Blueprint Flask Routing
+app.register_blueprint(endpoints, url_prefix='/api/v1')
+
+# Database
 db = SQLAlchemy(app)
 
+# JWT
 from gefapi.jwt import authenticate, identity
 jwt = JWT(app, authenticate, identity)

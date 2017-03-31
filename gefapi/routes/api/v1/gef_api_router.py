@@ -24,4 +24,4 @@ def hiprotected():
     """Hi"""
     logging.info('Hi')
     logging.info(current_identity)
-    return jsonify("test"), 200
+    return jsonify({'hi': 'hi'}), 200

@@ -32,6 +32,6 @@ class User(db.Model):
 
 class UserDTO(object):
     def __init__(self, email, password):
-        self.id = 2
+        self.id = 1
         self.email = email
         self.password = password
