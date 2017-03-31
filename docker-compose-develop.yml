@@ -10,3 +10,16 @@ develop:
   volumes:
     - ./gefapi:/opt/gef-api/gefapi
   restart: always
+  links:
+    - database
+
+database:
+    image: postgres:9.6
+    container_name: gef-api-database
+    environment:
+        POSTGRES_PASSWORD: root
+        POSTGRES_USER: root
+        POSTGRES_DB: gef
+    volumes:
+      - $HOME/docker/gef/data:/var/lib/postgresql/data
+    restart: always

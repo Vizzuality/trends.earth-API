@@ -4,6 +4,6 @@ SETTINGS = {
         'level': 'INFO'
     },
     'service': {
-        'port': 6000
+        'port': 3000
     }
 }
