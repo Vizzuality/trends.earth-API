@@ -1,0 +1,12 @@
+develop:
+  extends:
+    file: base.yml
+    service: base
+  container_name: gef-api-develop
+  environment:
+    ENVIRONMENT: dev
+    DEBUG: "True"
+  command: develop
+  volumes:
+    - ./gefapi:/opt/gef-api/gefapi
+  restart: always

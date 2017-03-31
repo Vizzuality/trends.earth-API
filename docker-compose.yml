@@ -1,0 +1,8 @@
+prod:
+  image: vizzuality/gef-api:1.0.0${STAGING}
+  ports:
+    - "3000"
+  env_file:
+    - prod.env
+  command: start
+  restart: always
