@@ -27,3 +27,8 @@ class Execution(db.Model):
 
     def __repr__(self):
         return '<Execution %r>' % self.id
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        pass

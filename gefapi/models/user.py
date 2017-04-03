@@ -1,3 +1,4 @@
+"""USER MODEL"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -6,9 +7,11 @@ from __future__ import print_function
 from datetime import date
 
 from gefapi import db
+from gefapi.models import dump_datetime
 
 
 class User(db.Model):
+    """User Model"""
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
@@ -29,9 +32,19 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.email
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'id': self.id,
+            'email': self.email,
+            'created_at': dump_datetime(self.created_at),
+            'role': self.role,
+            'logs': self.serialize_logs,
+            'scripts': self.serialize_scripts
+        }
 
-class UserDTO(object):
-    def __init__(self, email, password):
-        self.id = 1
-        self.email = email
-        self.password = password
+    @property
+    def serialize_script(self):
+        """Serialize Scripts"""
+        return [item.serialize for item in self.scripts]

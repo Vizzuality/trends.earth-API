@@ -4,13 +4,16 @@ from __future__ import division
 from __future__ import print_function
 
 
-from gefapi.models import UserDTO
+class TempUser(object):
+    def __init__(self, email, password):
+        self.id = 1
+        self.email = email
+        self.password = password
 
 
 def authenticate(username, password):
-    user = UserDTO(email=username, password=password)
-    return user
+    return TempUser(username, password)
 
 
 def identity(payload):
-    return UserDTO(email='test', password='test')
+    return TempUser('temp', 'temp')
