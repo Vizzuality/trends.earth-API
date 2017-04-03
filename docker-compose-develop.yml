@@ -6,12 +6,15 @@ develop:
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
+    DOCKER_URL: /tmp/docker.sock
   command: develop
   volumes:
     - ./gefapi:/opt/gef-api/gefapi
+    - /var/run/docker.sock:/tmp/docker.sock
   restart: always
   links:
     - database
+    - registry
 
 database:
     image: postgres:9.6
@@ -22,4 +25,11 @@ database:
         POSTGRES_DB: gef
     volumes:
       - $HOME/docker/gef/data:/var/lib/postgresql/data
+    restart: always
+
+registry:
+    image: registry:2
+    container_name: gef-api-registry
+    ports:
+      - 5000
     restart: always
