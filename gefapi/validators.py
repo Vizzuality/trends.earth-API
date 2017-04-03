@@ -9,7 +9,7 @@ def validate_user(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         json_data = request.get_json()
-        if "email" not in json_data or "password" not in json_data:
+        if 'email' not in json_data or 'password' not in json_data:
             return jsonify({
                 'status': 400,
                 'detail': 'User Creation Failed'

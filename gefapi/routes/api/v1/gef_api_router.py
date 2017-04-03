@@ -4,13 +4,21 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import json
+
+from flask import jsonify, request
+from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints
 from gefapi.validators import validate_user
+from gefapi.services import UserService, ScriptService
 
-from flask import jsonify
-from flask_jwt import jwt_required, current_identity
 
+def error(status=400, detail='Bad Request'):
+    return jsonify({
+        'status': status,
+        'detail': detail
+    }), status
 
 # SCRIPT CREATION CRUD
 
@@ -87,7 +95,14 @@ def login():
 @jwt_required()
 @validate_user
 def create_user():
-    return jsonify({'hi': 'hi'}), 200
+    body = request.get_json()
+    if current_identity.role is not 'ADMIN':
+        return error(status=403, detail='Forbidden')
+    try:
+        user = UserService.create_user(body)
+    except Exception as e:
+        error(status=400, detail=str(e))
+    return jsonify(user.serialize), 200
 
 
 @endpoints.route('/user/<user>', methods=['GET'])

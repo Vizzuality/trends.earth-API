@@ -9,10 +9,10 @@ import json
 import logging
 
 from flask import Flask
-from gefapi.config import SETTINGS
-from gefapi.routes.api.v1 import endpoints
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt import JWT
+from gefapi.config import SETTINGS
+from gefapi.jwt import authenticate, identity
 
 
 logging.basicConfig(
@@ -26,16 +26,16 @@ logging.basicConfig(
 app = Flask(__name__)
 
 # Config
-app.config.from_object(SETTINGS)
 app.config['SQLALCHEMY_DATABASE_URI'] = SETTINGS.get('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = SETTINGS.get('SECRET_KEY')
-
-# Blueprint Flask Routing
-app.register_blueprint(endpoints, url_prefix='/api/v1')
 
 # Database
 db = SQLAlchemy(app)
 
+# DB has to be ready!
+from gefapi.routes.api.v1 import endpoints
+# Blueprint Flask Routing
+app.register_blueprint(endpoints, url_prefix='/api/v1')
+
 # JWT
-from gefapi.jwt import authenticate, identity
 jwt = JWT(app, authenticate, identity)

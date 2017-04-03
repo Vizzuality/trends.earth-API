@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from datetime import date
+import datetime
 
 from gefapi import db
 from gefapi.models import dump_datetime
@@ -17,16 +17,15 @@ class User(db.Model):
     password = db.Column(db.String(80), nullable=False)
     salt = db.Column(db.String(100), nullable=False)
     jwt = db.Column(db.Text())
-    created_at = db.Column(db.DateTime())
+    created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     role = db.Column(db.String(10))
     scripts = db.relationship('Script', backref='user', lazy='dynamic')
 
-    def __init__(self, email, password, salt='', jwt=None, created_at=date.today(), role='USER'):
+    def __init__(self, email, password, salt='', jwt=None, role='USER'):
         self.email = email
         self.password = password
         self.salt = salt
         self.jwt = jwt
-        self.created_at = created_at
         self.role = role
 
     def __repr__(self):
