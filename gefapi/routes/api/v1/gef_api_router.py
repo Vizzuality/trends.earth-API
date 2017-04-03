@@ -10,8 +10,9 @@ from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints
-from gefapi.validators import validate_user
+from gefapi.validators import validate_user_creation, validate_user_update
 from gefapi.services import UserService, ScriptService
+from gefapi.errors import UserNotFound, UserDuplicated
 
 
 def error(status=400, detail='Bad Request'):
@@ -81,7 +82,7 @@ def get_ticket(ticket):
     return jsonify({'hi': 'hi'}), 200
 
 
-# LOGIN
+# @TODO LOGIN -> /auth
 
 @endpoints.route('/login', methods=['POST'])
 def login():
@@ -89,34 +90,81 @@ def login():
     pass
 
 
-# @TODO USER -> /auth
+# USER
 
 @endpoints.route('/user', methods=['POST'])
 @jwt_required()
-@validate_user
+@validate_user_creation
 def create_user():
+    logging.info('[ROUTER]: Creating user')
     body = request.get_json()
     if current_identity.role is not 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
+    except UserDuplicated as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
     except Exception as e:
-        error(status=400, detail=str(e))
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
     return jsonify(user.serialize), 200
+
+
+@endpoints.route('/user', methods=['GET'])
+def get_users():
+    logging.info('[ROUTER]: Getting all users')
+    try:
+        users = UserService.get_users()
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
+    return jsonify(data=[user.serialize for user in users]), 200
 
 
 @endpoints.route('/user/<user>', methods=['GET'])
 def get_user(user):
-    pass
+    logging.info('[ROUTER]: Getting user'+user)
+    try:
+        user = UserService.get_user(user)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
+    return jsonify(user.serialize), 200
 
 
 @endpoints.route('/user/<user>', methods=['PATCH'])
 @jwt_required()
+@validate_user_update
 def update_user(user):
-    pass
+    logging.info('[ROUTER]: Updating user'+user)
+    body = request.get_json()
+    if current_identity.role is not 'ADMIN':
+        return error(status=403, detail='Forbidden')
+    try:
+        user = UserService.update_user(body)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
+    return jsonify(user.serialize), 200
 
 
 @endpoints.route('/user/<user>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user):
-    pass
+    logging.info('[ROUTER]: Deleting user'+user)
+    body = request.get_json()
+    if current_identity.role is not 'ADMIN':
+        return error(status=403, detail='Forbidden')
+    try:
+        user = UserService.delete_user(body)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
+    return jsonify(user.serialize), 200

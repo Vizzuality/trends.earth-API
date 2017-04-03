@@ -7,7 +7,6 @@ from __future__ import print_function
 import datetime
 
 from gefapi import db
-from gefapi.models import dump_datetime
 
 
 class Script(db.Model):
@@ -34,7 +33,7 @@ class Script(db.Model):
         return {
             'id': self.id,
             'slug': self.slug,
-            'created_at': dump_datetime(self.created_at),
+            'created_at': self.created_at,
             'user_id': self.user_id,
             'logs': self.serialize_logs,
             'executions': self.serialize_executions

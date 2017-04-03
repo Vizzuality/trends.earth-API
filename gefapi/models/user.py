@@ -7,7 +7,6 @@ from __future__ import print_function
 import datetime
 
 from gefapi import db
-from gefapi.models import dump_datetime
 
 
 class User(db.Model):
@@ -37,13 +36,12 @@ class User(db.Model):
         return {
             'id': self.id,
             'email': self.email,
-            'created_at': dump_datetime(self.created_at),
+            'created_at': self.created_at,
             'role': self.role,
-            'logs': self.serialize_logs,
             'scripts': self.serialize_scripts
         }
 
     @property
-    def serialize_script(self):
+    def serialize_scripts(self):
         """Serialize Scripts"""
         return [item.serialize for item in self.scripts]
