@@ -4,15 +4,14 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
-import json
 
 from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints
-from gefapi.validators import validate_user_creation, validate_user_update
+from gefapi.validators import validate_user_creation, validate_user_update, validate_file
 from gefapi.services import UserService, ScriptService
-from gefapi.errors import UserNotFound, UserDuplicated
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile
 
 
 def error(status=400, detail='Bad Request'):
@@ -21,15 +20,28 @@ def error(status=400, detail='Bad Request'):
         'detail': detail
     }), status
 
+
 # SCRIPT CREATION CRUD
 
 @endpoints.route('/script', methods=['POST'])
 @jwt_required()
+@validate_file
 def create_script():
     """Create a script"""
-    logging.info('Create a script')
-    logging.info(current_identity)
-    return jsonify({'hi': 'hi'}), 200
+    logging.info('[ROUTER]: Creating a script')
+    sent_file = request.files.get('file')
+    if sent_file.filename == '':
+        sent_file.filename = 'script'
+    user = current_identity
+    try:
+        user = ScriptService.create_script(sent_file, user)
+    except InvalidFile as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail=str(e))
+    return jsonify(user.serialize), 200
 
 
 @endpoints.route('/script', methods=['GET'])
@@ -98,7 +110,8 @@ def login():
 def create_user():
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
-    if current_identity.role is not 'ADMIN':
+    user = current_identity
+    if user.role is not 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
@@ -139,7 +152,8 @@ def get_user(user):
 def update_user(user):
     logging.info('[ROUTER]: Updating user'+user)
     body = request.get_json()
-    if current_identity.role is not 'ADMIN':
+    user = current_identity
+    if user.role is not 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.update_user(body)
@@ -157,7 +171,8 @@ def update_user(user):
 def delete_user(user):
     logging.info('[ROUTER]: Deleting user'+user)
     body = request.get_json()
-    if current_identity.role is not 'ADMIN':
+    user = current_identity
+    if user.role is not 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.delete_user(body)

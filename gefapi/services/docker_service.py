@@ -3,19 +3,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from gefapi.config import SETTINGS
-import docker
 import logging
+import docker
 
-REGISTRY_URL=SETTINGS.get('REGISTRY_URL')
-DOCKER_URL=SETTINGS.get('DOCKER_URL')
+from gefapi.config import SETTINGS
+
+REGISTRY_URL = SETTINGS.get('REGISTRY_URL')
+DOCKER_URL = SETTINGS.get('DOCKER_URL')
 
 api_client = docker.APIClient(base_url=DOCKER_URL)
 docker_client = docker.DockerClient(base_url=DOCKER_URL)
 
 
-
 class DockerService(object):
+    """Docker Service"""
 
     @staticmethod
     def save_build_log(script_id, line):
@@ -71,7 +72,7 @@ class DockerService(object):
         logging.info('Running %s image with params %s' % (image, param))
         container = None
         try:
-            environment['ENV']='dev'
+            environment['ENV'] = 'dev'
             container = docker_client.containers.run(image=REGISTRY_URL+image, command=param, environment=environment, detach=True, name='execution-'+str(execution_id))
         except docker.errors.ImageNotFound as error:
             logging.error('Image not found', error)

@@ -10,6 +10,8 @@ from gefapi import db
 from gefapi.models import User
 from gefapi.errors import UserNotFound, UserDuplicated
 
+ROLES = ['ADMIN', 'MANAGER', 'USER']
+
 
 class UserService(object):
     """User Class"""
@@ -20,6 +22,8 @@ class UserService(object):
         email = user.get('email', None)
         password = user.get('password', None)
         role = user.get('role', 'USER')
+        if role not in ROLES:
+            role = 'USER'
         if email is None or password is None:
             raise Exception
         current_user = User.query.filter_by(email=user.get('email')).first()
@@ -54,7 +58,7 @@ class UserService(object):
         password = user.get('password', None)
         role = user.get('role', None)
         if password is None and role is None:
-            raise Exception  # @TODO Not valid
+            raise Exception
         user = User.query.filter_by(email=user.get('email')).first()
         if not user:
             raise UserNotFound(message='User with email '+email+' does not exist')

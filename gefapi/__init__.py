@@ -28,6 +28,7 @@ app = Flask(__name__)
 # Config
 app.config['SQLALCHEMY_DATABASE_URI'] = SETTINGS.get('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = SETTINGS.get('SECRET_KEY')
+app.config['UPLOAD_FOLDER'] = SETTINGS.get('UPLOAD_FOLDER')
 
 # Database
 db = SQLAlchemy(app)
