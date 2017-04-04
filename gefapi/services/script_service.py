@@ -62,8 +62,7 @@ class ScriptService(object):
 
         name = script_name
         slug = script_name  # @TODO
-        user_id = 8  # @TODO
-        # user_id = user.get('id', None)  # @TODO
+        user_id = user.id
         script = Script(name=name, slug=slug, user_id=user_id)
         try:
             logging.info('[DB]: ADD')

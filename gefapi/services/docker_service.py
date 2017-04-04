@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+from multiprocessing import Process
 import docker
 
 from gefapi.config import SETTINGS
@@ -13,6 +14,17 @@ DOCKER_URL = SETTINGS.get('DOCKER_URL')
 
 api_client = docker.APIClient(base_url=DOCKER_URL)
 docker_client = docker.DockerClient(base_url=DOCKER_URL)
+
+
+class DockerThread(object):
+
+    def __init__(self):
+        p = Process(target=self.run, args=())
+        p.daemon = True
+        p.start()
+
+    def run(self):
+        print('hi')
 
 
 class DockerService(object):

@@ -6,7 +6,7 @@ develop:
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
-    DOCKER_URL: /tmp/docker.sock
+    DOCKER_URL: unix:///tmp/docker.sock
   command: develop
   volumes:
     - ./gefapi:/opt/gef-api/gefapi

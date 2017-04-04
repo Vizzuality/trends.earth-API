@@ -9,5 +9,6 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=int(os.getenv('PORT')),
-        debug=os.getenv('DEBUG') == 'True'
+        debug=os.getenv('DEBUG') == 'True',
+        threaded=True
     )
