@@ -10,9 +10,7 @@ import logging
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt import JWT
 from gefapi.config import SETTINGS
-from gefapi.jwt import authenticate, identity
 
 
 logging.basicConfig(
@@ -33,7 +31,6 @@ app.config['JWT_AUTH_USERNAME_KEY'] = SETTINGS.get('JWT_AUTH_USERNAME_KEY')
 app.config['JWT_AUTH_HEADER_PREFIX'] = SETTINGS.get('JWT_AUTH_HEADER_PREFIX')
 app.config['JWT_EXPIRATION_DELTA'] = SETTINGS.get('JWT_EXPIRATION_DELTA')
 
-
 # Database
 db = SQLAlchemy(app)
 
@@ -42,5 +39,7 @@ from gefapi.routes.api.v1 import endpoints
 # Blueprint Flask Routing
 app.register_blueprint(endpoints, url_prefix='/api/v1')
 
+from flask_jwt import JWT
+from gefapi.jwt import authenticate, identity
 # JWT
 jwt = JWT(app, authenticate, identity)

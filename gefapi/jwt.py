@@ -4,16 +4,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
 
-class TempUser(object):
-    def __init__(self):
-        self.id = 1
-        self.role = 'ADMIN'
+from gefapi.services import UserService
 
 
-def authenticate(username, password):
-    return TempUser()
+def authenticate(email, password):
+    logging.info('[JWT]: Auth user '+email)
+    user = None
+    try:
+        user = UserService.authenticate_user(user_id=str(email), password=str(password))
+    except Exception:
+        logging.error('[JWT]: Error')
+    return user
 
 
 def identity(payload):
-    return TempUser()
+    user_id = str(payload['identity'])
+    user = None
+    try:
+        user = UserService.get_user(user_id=user_id)
+    except Exception:
+        logging.error('[JWT]: Error')
+    return user

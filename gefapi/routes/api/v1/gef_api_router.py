@@ -8,17 +8,10 @@ import logging
 from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
-from gefapi.routes.api.v1 import endpoints
+from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, validate_file
 from gefapi.services import UserService, ScriptService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile
-
-
-def error(status=400, detail='Bad Request'):
-    return jsonify({
-        'status': status,
-        'detail': detail
-    }), status
 
 
 # SCRIPT CREATION CRUD
@@ -40,8 +33,8 @@ def create_script():
         return error(status=400, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
-    return jsonify(user.serialize), 200
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
 
 
 @endpoints.route('/script', methods=['GET'])
@@ -110,8 +103,8 @@ def login():
 def create_user():
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
-    user = current_identity
-    if user.role is not 'ADMIN':
+    identity = current_identity
+    if identity.role != 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
@@ -120,8 +113,8 @@ def create_user():
         return error(status=400, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
-    return jsonify(user.serialize), 200
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
 
 
 @endpoints.route('/user', methods=['GET'])
@@ -131,7 +124,7 @@ def get_users():
         users = UserService.get_users()
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
+        return error(status=500, detail='Generic Error')
     return jsonify(data=[user.serialize for user in users]), 200
 
 
@@ -140,10 +133,13 @@ def get_user(user):
     logging.info('[ROUTER]: Getting user'+user)
     try:
         user = UserService.get_user(user)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
-    return jsonify(user.serialize), 200
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
 
 
 @endpoints.route('/user/<user>', methods=['PATCH'])
@@ -152,34 +148,33 @@ def get_user(user):
 def update_user(user):
     logging.info('[ROUTER]: Updating user'+user)
     body = request.get_json()
-    user = current_identity
-    if user.role is not 'ADMIN':
+    identity = current_identity
+    if identity.role != 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
-        user = UserService.update_user(body)
+        user = UserService.update_user(body, user)
     except UserNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
-    return jsonify(user.serialize), 200
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
 
 
 @endpoints.route('/user/<user>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user):
     logging.info('[ROUTER]: Deleting user'+user)
-    body = request.get_json()
-    user = current_identity
-    if user.role is not 'ADMIN':
+    identity = current_identity
+    if identity.role != 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
-        user = UserService.delete_user(body)
+        user = UserService.delete_user(user)
     except UserNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
-        return error(status=500, detail=str(e))
-    return jsonify(user.serialize), 200
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200

@@ -5,16 +5,20 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import uuid
 
+from gefapi.models import GUID
 from gefapi import db
+db.GUID = GUID
+
 
 class ScriptLog(db.Model):
     """ScriptLog Model"""
     __tablename__ = 'script_log'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     text = db.Column(db.Text())
     register_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
-    script_id = db.Column(db.Integer(), db.ForeignKey('script.id'))
+    script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
 
     def __init__(self, text, script_id):
         self.text = text

@@ -5,17 +5,20 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import uuid
 
+from gefapi.models import GUID
 from gefapi import db
+db.GUID = GUID
 
 
 class Script(db.Model):
     """Script Model"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     name = db.Column(db.String(120), unique=True, nullable=False)
     slug = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
     logs = db.relationship('ScriptLog', backref='script', lazy='dynamic')
     executions = db.relationship('Execution', backref='script', lazy='dynamic')
 

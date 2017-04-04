@@ -3,18 +3,13 @@
 import logging
 import re
 
+from gefapi.routes.api.v1 import error
+
 from functools import wraps
 from flask import request, jsonify
 
 
 EMAIL_REGEX = re.compile(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$')
-
-
-def error(status=400, detail='Bad Request'):
-    return jsonify({
-        'status': status,
-        'detail': detail
-    }), status
 
 
 def validate_user_creation(func):

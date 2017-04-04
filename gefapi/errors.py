@@ -23,3 +23,7 @@ class UserDuplicated(Error):
 
 class InvalidFile(Error):
     pass
+
+
+class AuthError(Error):
+    pass

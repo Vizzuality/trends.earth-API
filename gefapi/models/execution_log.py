@@ -5,17 +5,20 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
+import uuid
 
+from gefapi.models import GUID
 from gefapi import db
+db.GUID = GUID
 
 
 class ExecutionLog(db.Model):
     """ExecutionLog Model"""
     __tablename__ = 'execution_log'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     text = db.Column(db.Text())
     register_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
-    execution_id = db.Column(db.Integer(), db.ForeignKey('execution.id'))
+    execution_id = db.Column(db.GUID(), db.ForeignKey('execution.id'))
 
     def __init__(self, text, execution_id):
         self.text = text
