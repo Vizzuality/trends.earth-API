@@ -5,8 +5,11 @@ from __future__ import print_function
 
 import logging
 from multiprocessing import Process
+from shutil import copyfile
 import docker
+import os
 
+from gefapi import db
 from gefapi.config import SETTINGS
 
 REGISTRY_URL = SETTINGS.get('REGISTRY_URL')
@@ -16,15 +19,19 @@ api_client = docker.APIClient(base_url=DOCKER_URL)
 docker_client = docker.DockerClient(base_url=DOCKER_URL)
 
 
-class DockerThread(object):
+class DockerBuildThread(object):
 
-    def __init__(self):
+    def __init__(self, script_id, path, tag_image):
         p = Process(target=self.run, args=())
+        self.script_id = script_id
+        self.path = path
+        self.tag_image = tag_image
         p.daemon = True
         p.start()
 
     def run(self):
-        print('hi')
+        logging.info('[THREAD] Running build')
+        DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
 
 
 class DockerService(object):
@@ -49,7 +56,7 @@ class DockerService(object):
         logging.debug('Pushing image with tag %s' % (tag_image))
         pushed = False
         try:
-            for line in api_client.push(REGISTRY_URL+tag_image, stream=True, decode=True, insecure_registry=True):
+            for line in api_client.push(REGISTRY_URL+'/'+tag_image, stream=True, decode=True, insecure_registry=True):
                 DockerService.save_build_log(script_id=script_id, line=line)
                 if 'aux' in line and pushed:
                     return True, line['aux']
@@ -62,10 +69,13 @@ class DockerService(object):
     @staticmethod
     def build(script_id, path, tag_image):
         """Build image and push to private docker registry"""
-        print(docker.version)
+        
         logging.info('Building new image in path %s with tag %s' % (path, tag_image))
         try:
-            for line in api_client.build(path=path, rm=True, decode=True, tag=REGISTRY_URL+tag_image, forcerm=True, pull=False, nocache=True):
+            logging.debug('[SERVICE]: Copying dockerfile')
+            dockerfile = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'run/Dockerfile')
+            copyfile(dockerfile, os.path.join(path, 'Dockerfile'))
+            for line in api_client.build(path=path, rm=True, decode=True, tag=REGISTRY_URL+'/'+tag_image, forcerm=True, pull=False, nocache=True):
                 if 'errorDetail' in line:
                     return False, line['errorDetail']
                 else:

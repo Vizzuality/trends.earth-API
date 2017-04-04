@@ -11,6 +11,7 @@ develop:
   volumes:
     - ./gefapi:/opt/gef-api/gefapi
     - /var/run/docker.sock:/tmp/docker.sock
+    - /data/scripts:/data/scripts
   restart: always
   links:
     - database
@@ -31,5 +32,5 @@ registry:
     image: registry:2
     container_name: gef-api-registry
     ports:
-      - 5000
+      - 5000:5000
     restart: always

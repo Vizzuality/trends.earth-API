@@ -11,6 +11,7 @@ import json
 
 from werkzeug.utils import secure_filename
 
+from gefapi.services import DockerBuildThread
 from gefapi import db
 from gefapi.models import Script
 from gefapi.config import SETTINGS
@@ -42,6 +43,7 @@ class ScriptService(object):
                     os.makedirs(SETTINGS.get('UPLOAD_FOLDER'))
                 sent_file.save(sent_file_path)
             except Exception as e:
+                print(e)
                 raise e
             logging.info('[SERVICE]: File saved')
         else:
@@ -49,9 +51,10 @@ class ScriptService(object):
 
         try:
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
-                if filename.rsplit('.')[0]+'/configuration.json' not in tar.getnames():
+                print(tar.getnames())
+                if 'configuration.json' not in tar.getnames():
                     raise InvalidFile(message='Invalid File')
-                config_file = tar.extractfile(member=filename.rsplit('.')[0]+'/configuration.json')
+                config_file = tar.extractfile(member='configuration.json')
                 logging.info('[SERVICE]: Config file extracted')
                 config_content = config_file.read()
                 logging.info('[SERVICE]: Config file opened')
@@ -68,6 +71,13 @@ class ScriptService(object):
             logging.info('[DB]: ADD')
             db.session.add(script)
             db.session.commit()
+            os.rename(sent_file_path, os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz'))
+            sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz')
+            with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
+                tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+slug)
+            DockerBuildThread(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+slug, tag_image=script.slug)
+            
+
         except Exception as error:
             raise error
         return script
