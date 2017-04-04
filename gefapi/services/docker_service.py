@@ -1,13 +1,14 @@
 """DOCKER SERVICE"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import logging
 from multiprocessing import Process
 from shutil import copyfile
 import docker
-import os
 
 from gefapi import db
 from gefapi.config import SETTINGS
@@ -69,7 +70,7 @@ class DockerService(object):
     @staticmethod
     def build(script_id, path, tag_image):
         """Build image and push to private docker registry"""
-        
+
         logging.info('Building new image in path %s with tag %s' % (path, tag_image))
         try:
             logging.debug('[SERVICE]: Copying dockerfile')

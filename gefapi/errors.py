@@ -21,9 +21,17 @@ class UserDuplicated(Error):
     pass
 
 
+class AuthError(Error):
+    pass
+
+
 class InvalidFile(Error):
     pass
 
 
-class AuthError(Error):
+class ScriptNotFound(Error):
+    pass
+
+
+class ScriptDuplicated(Error):
     pass

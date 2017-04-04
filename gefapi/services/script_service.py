@@ -8,6 +8,7 @@ import os
 import logging
 import tarfile
 import json
+from uuid import UUID
 
 from werkzeug.utils import secure_filename
 
@@ -15,7 +16,7 @@ from gefapi.services import DockerBuildThread
 from gefapi import db
 from gefapi.models import Script
 from gefapi.config import SETTINGS
-from gefapi.errors import InvalidFile
+from gefapi.errors import InvalidFile, ScriptNotFound, ScriptDuplicated
 
 
 def allowed_file(filename):
@@ -76,7 +77,7 @@ class ScriptService(object):
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+slug)
             DockerBuildThread(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+slug, tag_image=script.slug)
-            
+
 
         except Exception as error:
             raise error
@@ -84,15 +85,41 @@ class ScriptService(object):
 
     @staticmethod
     def get_scripts():
-        return Script.query.all()
+        logging.info('[SERVICE]: Getting scripts')
+        logging.info('[DB]: QUERY')
+        scripts = Script.query.all()
+        return scripts
 
     @staticmethod
     def get_script(script_id):
-        return Script.query.get(script_id)
+        logging.info('[SERVICE]: Getting script: '+script_id)
+        logging.info('[DB]: QUERY')
+        try:
+            val = UUID(script_id, version=4)
+            script = Script.query.get(script_id)
+        except ValueError:
+            script = Script.query.filter_by(slug=script_id).first()
+        except Exception as error:
+            raise error
+        if not script:
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        return script
+
+    @staticmethod
+    def update_script(script, user_id):
+        logging.info('[SERVICE]: Updating script')  # @TODO
+        pass
 
     @staticmethod
     def delete_script(script_id):
-        script = Script.query.get(script_id)
-        db.session.delete(script)
-        db.session.commit()
+        logging.info('[SERVICE]: Deleting script'+script_id)
+        script = ScriptService.get_script(script_id=script_id)
+        if not script:
+            raise ScriptNotFound(message='Script with script_id '+script_id+' does not exist')
+        try:
+            logging.info('[DB]: DELETE')
+            db.session.delete(script)
+            db.session.commit()
+        except Exception as error:
+            raise error
         return script

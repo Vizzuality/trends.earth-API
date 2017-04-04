@@ -35,7 +35,7 @@ app.config['JWT_EXPIRATION_DELTA'] = SETTINGS.get('JWT_EXPIRATION_DELTA')
 db = SQLAlchemy(app)
 
 # DB has to be ready!
-from gefapi.routes.api.v1 import endpoints
+from gefapi.routes.api.v1 import endpoints, error
 # Blueprint Flask Routing
 app.register_blueprint(endpoints, url_prefix='/api/v1')
 
@@ -43,3 +43,28 @@ from flask_jwt import JWT
 from gefapi.jwt import authenticate, identity
 # JWT
 jwt = JWT(app, authenticate, identity)
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return error(status=403, detail='Forbidden')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return error(status=404, detail='Not Found')
+
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return error(status=405, detail='Method Not Allowed')
+
+
+@app.errorhandler(410)
+def gone(e):
+    return error(status=410, detail='Gone')
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return error(status=500, detail='Internal Server Error')
