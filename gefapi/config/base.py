@@ -1,5 +1,6 @@
 
 import os
+from datetime import timedelta
 
 SETTINGS = {
     'logging': {
@@ -13,5 +14,8 @@ SETTINGS = {
     'DOCKER_URL': os.getenv('DOCKER_URL'),
     'REGISTRY_URL': os.getenv('REGISTRY_PORT_5000_TCP_ADDR')+':'+os.getenv('REGISTRY_PORT_5000_TCP_PORT'),
     'UPLOAD_FOLDER': '/tmp/scripts',
-    'ALLOWED_EXTENSIONS': set(['tar.gz'])
+    'ALLOWED_EXTENSIONS': set(['tar.gz']),
+    'JWT_AUTH_USERNAME_KEY': 'email',
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+    'JWT_EXPIRATION_DELTA': timedelta(seconds=60*60*24)
 }
