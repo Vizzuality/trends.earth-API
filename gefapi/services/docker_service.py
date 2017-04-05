@@ -5,16 +5,17 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import logging
 from multiprocessing import Process
 from shutil import copyfile
+from celery.utils.log import get_task_logger
 import docker
 
 import time
 
-from gefapi import db
+from gefapi import db, celery
 from gefapi.models import Script, ScriptLog
 from gefapi.config import SETTINGS
+
 
 REGISTRY_URL = SETTINGS.get('REGISTRY_URL')
 DOCKER_URL = SETTINGS.get('DOCKER_URL')
@@ -23,36 +24,31 @@ api_client = docker.APIClient(base_url=DOCKER_URL)
 docker_client = docker.DockerClient(base_url=DOCKER_URL)
 
 
-class DockerBuildThread(object):
 
-    def __init__(self, script_id, path, tag_image):
-        p = Process(target=self.run, args=())
-        self.script_id = script_id
-        self.path = path
-        self.tag_image = tag_image
-        p.daemon = True
-        p.start()
+import logging
 
-    def run(self):
-        time.sleep(5)
-        logging.info('[THREAD] Running build')
-        logging.debug('Obtaining script with id %s' % (self.script_id));
-        script = Script.query.get(self.script_id)
-        script.status = 'BUILDING'
-        db.session.add(script)
-        db.session.commit()
-        logging.debug('Building...')
-        correct, log = DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
-        logging.debug('Changing status')        
-        script = Script.query.get(self.script_id)
-        if correct:
-            logging.debug('Correct build')
-            script.status = 'SUCCESS'
-        else:
-            logging.debug('Fail build')
-            script.status = 'FAIL'
-        db.session.add(script)
-        db.session.commit()
+@celery.task()
+def build_run(script_id, path, tag_image):
+    
+    time.sleep(5)
+    logging.info('[THREAD] Running build')
+    logging.debug('Obtaining script with id %s' % (script_id));
+    script = Script.query.get(script_id)
+    script.status = 'BUILDING'
+    db.session.add(script)
+    db.session.commit()
+    logging.debug('Building...')
+    correct, log = DockerService.build(script_id=script_id, path=path, tag_image=tag_image)
+    logging.debug('Changing status')        
+    script = Script.query.get(script_id)
+    if correct:
+        logging.debug('Correct build')
+        script.status = 'SUCCESS'
+    else:
+        logging.debug('Fail build')
+        script.status = 'FAIL'
+    db.session.add(script)
+    db.session.commit()
 
 
 class DockerRunThread(object):

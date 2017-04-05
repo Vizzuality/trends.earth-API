@@ -3,6 +3,8 @@ develop:
     file: base.yml
     service: base
   container_name: gef-api-develop
+  ports:
+    - "3000:3000"
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
@@ -18,6 +20,29 @@ develop:
   links:
     - database
     - registry
+    - redis
+worker:
+  extends:
+    file: base.yml
+    service: base
+  container_name: gef-api-worker-develop
+
+  environment:
+    ENVIRONMENT: dev
+    DEBUG: "True"
+    FLASK_APP: main.py
+    DOCKER_URL: unix:///tmp/docker.sock
+  command: worker
+  volumes:
+    - ./gefapi:/opt/gef-api/gefapi
+    - ./migrations:/opt/gef-api/migrations
+    - /var/run/docker.sock:/tmp/docker.sock
+    - /data/scripts:/data/scripts
+  restart: always
+  links:
+    - database
+    - registry
+    - redis
 
 database:
     image: postgres:9.6
@@ -35,4 +60,11 @@ registry:
     container_name: gef-api-registry
     ports:
       - 5000:5000
+    restart: always
+
+redis:
+    image: redis
+    container_name: gef-api-redis
+    ports:
+      - 6379
     restart: always

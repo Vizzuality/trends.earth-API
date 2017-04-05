@@ -12,6 +12,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from gefapi.config import SETTINGS
+from gefapi.celery import make_celery
 
 
 logging.basicConfig(
@@ -31,11 +32,15 @@ app.config['UPLOAD_FOLDER'] = SETTINGS.get('UPLOAD_FOLDER')
 app.config['JWT_AUTH_USERNAME_KEY'] = SETTINGS.get('JWT_AUTH_USERNAME_KEY')
 app.config['JWT_AUTH_HEADER_PREFIX'] = SETTINGS.get('JWT_AUTH_HEADER_PREFIX')
 app.config['JWT_EXPIRATION_DELTA'] = SETTINGS.get('JWT_EXPIRATION_DELTA')
+app.config['CELERY_BROKER_URL'] = SETTINGS.get('CELERY_BROKER_URL')
+app.config['CELERY_RESULT_BACKEND'] = SETTINGS.get('CELERY_RESULT_BACKEND')
 
 # Database
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
+
+celery = make_celery(app)
 
 # DB has to be ready!
 from gefapi.routes.api.v1 import endpoints, error
@@ -46,6 +51,8 @@ from flask_jwt import JWT
 from gefapi.jwt import authenticate, identity
 # JWT
 jwt = JWT(app, authenticate, identity)
+
+
 
 
 @app.errorhandler(403)

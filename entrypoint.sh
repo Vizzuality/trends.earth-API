@@ -13,6 +13,10 @@ case "$1" in
         echo "Running Start"
         exec gunicorn -c gunicorn.py gefapi.wsgi:application
         ;;
+    worker)
+        echo "Running celery"
+        exec celery -A gefapi.celery worker -E -B --loglevel=DEBUG
+        ;;
     *)
         exec "$@"
 esac
