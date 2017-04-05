@@ -10,6 +10,7 @@ import logging
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from gefapi.config import SETTINGS
 
 
@@ -33,6 +34,8 @@ app.config['JWT_EXPIRATION_DELTA'] = SETTINGS.get('JWT_EXPIRATION_DELTA')
 
 # Database
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
 
 # DB has to be ready!
 from gefapi.routes.api.v1 import endpoints, error

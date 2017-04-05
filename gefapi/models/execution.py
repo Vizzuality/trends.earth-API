@@ -20,6 +20,7 @@ class Execution(db.Model):
     end_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     status = db.Column(db.String(10), default='PENDING')
     progress = db.Column(db.Integer(), default=0)
+    params = db.Column(JSONB, default={})
     results = db.Column(JSONB, default={})
     logs = db.relationship('ExecutionLog', backref='execution', lazy='dynamic')
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
@@ -33,13 +34,17 @@ class Execution(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
+        end_date_formatted = None
+        if self.end_date:
+            end_date_formatted = self.end_date.isoformat()
         return {
             'id': self.id,
             'script_id': self.script_id,
-            'start_date': self.start_date,
-            'end_date': self.end_date,
+            'start_date': self.start_date.isoformat(),
+            'end_date': end_date_formatted,
             'status': self.status,
             'progress': self.progress,
+            'params': self.params,
             'results': self.results,
             'logs': self.serialize_logs
         }

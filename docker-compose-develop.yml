@@ -6,10 +6,12 @@ develop:
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
+    FLASK_APP: main.py
     DOCKER_URL: unix:///tmp/docker.sock
   command: develop
   volumes:
     - ./gefapi:/opt/gef-api/gefapi
+    - ./migrations:/opt/gef-api/migrations
     - /var/run/docker.sock:/tmp/docker.sock
     - /data/scripts:/data/scripts
   restart: always

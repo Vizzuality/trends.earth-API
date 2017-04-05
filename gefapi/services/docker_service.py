@@ -53,7 +53,39 @@ class DockerBuildThread(object):
             script.status = 'FAIL'
         db.session.add(script)
         db.session.commit()
-            
+
+
+class DockerRunThread(object):
+    
+    def __init__(self, execution_id, image, environment, param):
+        p = Process(target=self.run, args=())
+        self.execution_id = execution_id
+        self.image = image
+        self.environment = environment
+        self.param = param
+        p.daemon = True
+        p.start()
+
+    def run(self):
+        time.sleep(5)
+        logging.info('[THREAD] Running build')
+        logging.debug('Obtaining script with id %s' % (self.script_id));
+        script = Script.query.get(self.script_id)
+        script.status = 'BUILDING'
+        db.session.add(script)
+        db.session.commit()
+        logging.debug('Building...')
+        correct, log = DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
+        logging.debug('Changing status')        
+        script = Script.query.get(self.script_id)
+        if correct:
+            logging.debug('Correct build')
+            script.status = 'SUCCESS'
+        else:
+            logging.debug('Fail build')
+            script.status = 'FAIL'
+        db.session.add(script)
+        db.session.commit()            
 
 
 class DockerService(object):

@@ -16,11 +16,12 @@ class ExecutionService(object):
     """Execution Class"""
 
     @staticmethod
-    def create_execution(script_id):
+    def create_execution(script_id, params):
         logging.info('[SERVICE]: Creating execution')
         script = ScriptService.get_script(script_id)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        logging.debug(str(params))
         execution = Execution(script_id=script.id)
         try:
             logging.info('[DB]: ADD')

@@ -38,7 +38,7 @@ class Script(db.Model):
             'id': self.id,
             'name': self.name,
             'slug': self.slug,
-            'created_at': self.created_at,
+            'created_at': self.created_at.isoformat(),
             'user_id': self.user_id,
             'status': self.status,
             'logs': self.serialize_logs,

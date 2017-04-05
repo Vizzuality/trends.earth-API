@@ -15,7 +15,7 @@ db.GUID = GUID
 class ExecutionLog(db.Model):
     """ExecutionLog Model"""
     __tablename__ = 'execution_log'
-    id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
+    id2 = db.Column(db.Integer(), primary_key=True)
     text = db.Column(db.Text())
     register_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     execution_id = db.Column(db.GUID(), db.ForeignKey('execution.id'))
@@ -33,6 +33,6 @@ class ExecutionLog(db.Model):
         return {
             'id': self.id,
             'text': self.text,
-            'register_date': self.register_date,
+            'register_date': self.register_date.isoformat(),
             'script_id': self.script_id
         }

@@ -139,7 +139,7 @@ def run_script(script):
     """Run a script"""
     logging.info('[ROUTER]: Running script: '+script)
     try:
-        execution = ExecutionService.create_execution(script)
+        execution = ExecutionService.create_execution(script, request.args.to_dict())
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
