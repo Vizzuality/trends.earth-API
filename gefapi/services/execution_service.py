@@ -4,12 +4,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import logging
 from uuid import UUID
 
 from gefapi import db
 from gefapi.models import Execution
-from gefapi.services import ScriptService
+from gefapi.services import ScriptService, docker_run
+from gefapi.config import SETTINGS
+
+
+def dict_to_query(params):
+    pass
 
 
 class ExecutionService(object):
@@ -21,7 +27,6 @@ class ExecutionService(object):
         script = ScriptService.get_script(script_id)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
-        logging.debug(str(params))
         execution = Execution(script_id=script.id)
         try:
             logging.info('[DB]: ADD')
@@ -29,6 +34,16 @@ class ExecutionService(object):
             db.session.commit()
         except Exception as error:
             raise error
+
+        try:
+            environment = {
+                'EE_PRIVATE_KEY': SETTINGS.get('EE_PRIVATE_KEY', None)
+            }
+            params = json.dumps(params)
+            #  @TODO dict_to_query
+            docker_run.delay(execution.id, script.slug, environment, params)
+        except Exception as e:
+            raise e
         return execution
 
     @staticmethod

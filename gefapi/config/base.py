@@ -20,5 +20,6 @@ SETTINGS = {
     'JWT_EXPIRATION_DELTA': timedelta(seconds=60*60*24),
     'SCRIPTS_FS': '/data/scripts',
     'CELERY_BROKER_URL': 'redis://'+os.getenv('REDIS_PORT_6379_TCP_ADDR')+':' + os.getenv('REDIS_PORT_6379_TCP_PORT'),
-    'CELERY_RESULT_BACKEND':'redis://'+os.getenv('REDIS_PORT_6379_TCP_ADDR')+':' + os.getenv('REDIS_PORT_6379_TCP_PORT')
+    'CELERY_RESULT_BACKEND':'redis://'+os.getenv('REDIS_PORT_6379_TCP_ADDR')+':' + os.getenv('REDIS_PORT_6379_TCP_PORT'),
+    'EE_PRIVATE_KEY': os.getenv('EE_PRIVATE_KEY')
 }
