@@ -71,9 +71,10 @@ class DockerService(object):
                 text += ' ' + line['id']
 
         logging.debug(text)
-        script_log = ScriptLog(text=text, script_id=script_id)
-        db.session.add(script_log)
-        db.session.commit()
+        if text != None:
+            script_log = ScriptLog(text=text, script_id=script_id)
+            db.session.add(script_log)
+            db.session.commit()
 
     @staticmethod
     def push(script_id, tag_image):
