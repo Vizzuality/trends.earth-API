@@ -19,6 +19,7 @@ class Script(db.Model):
     slug = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
+    status = db.Column(db.String(80), nullable=False, default='PENDING')
     logs = db.relationship('ScriptLog', backref='script', lazy='dynamic')
     executions = db.relationship('Execution', backref='script', lazy='dynamic')
 
@@ -38,6 +39,7 @@ class Script(db.Model):
             'slug': self.slug,
             'created_at': self.created_at,
             'user_id': self.user_id,
+            'status': self.status,
             'logs': self.serialize_logs,
             'executions': self.serialize_executions
         }

@@ -10,7 +10,10 @@ from multiprocessing import Process
 from shutil import copyfile
 import docker
 
+import time
+
 from gefapi import db
+from gefapi.models import Script, ScriptLog
 from gefapi.config import SETTINGS
 
 REGISTRY_URL = SETTINGS.get('REGISTRY_URL')
@@ -31,8 +34,24 @@ class DockerBuildThread(object):
         p.start()
 
     def run(self):
+        time.sleep(5)
         logging.info('[THREAD] Running build')
-        DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
+        logging.debug('Obtaining script with id %s' % (self.script_id));
+        script = Script.query.get(self.script_id)
+        script.status = 'BUILDING'
+        db.session.add(script)
+        db.session.commit()
+        logging.debug('Building...')
+        correct = DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
+        logging.debug('Changing status')
+        script = Script.query.get(self.script_id)
+        if correct:
+            script.status = 'SUCCESS'
+        else:
+            script.status = 'FAIL'
+        db.session.add(script)
+        db.session.commit()
+            
 
 
 class DockerService(object):
@@ -47,9 +66,12 @@ class DockerService(object):
         elif 'status' in line:
             text = line['status']
             if 'id' in line:
-                text += line['id']
+                text += ' ' + line['id']
 
         logging.debug(text)
+        script_log = ScriptLog(text=text, script_id=script_id)
+        db.session.add(script_log)
+        db.session.commit()
 
     @staticmethod
     def push(script_id, tag_image):
