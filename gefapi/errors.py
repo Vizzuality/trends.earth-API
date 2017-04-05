@@ -35,3 +35,11 @@ class ScriptNotFound(Error):
 
 class ScriptDuplicated(Error):
     pass
+
+
+class NotAllowed(Error):
+    pass
+
+
+class TicketNotFound(Error):
+    pass

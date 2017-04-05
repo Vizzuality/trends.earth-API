@@ -7,3 +7,4 @@ from __future__ import print_function
 from gefapi.services.docker_service import DockerService, DockerBuildThread
 from gefapi.services.script_service import ScriptService
 from gefapi.services.user_service import UserService
+from gefapi.services.execution_service import ExecutionService
