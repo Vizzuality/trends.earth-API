@@ -25,7 +25,7 @@ class ExecutionLog(db.Model):
         self.execution_id = execution_id
 
     def __repr__(self):
-        return '<ExecutionLog %r>' % self.username
+        return '<ExecutionLog %r>' % self.id
 
     @property
     def serialize(self):

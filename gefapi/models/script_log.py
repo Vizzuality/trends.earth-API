@@ -25,7 +25,7 @@ class ScriptLog(db.Model):
         self.script_id = script_id
 
     def __repr__(self):
-        return '<ScriptLog %r>' % self.username
+        return '<ScriptLog %r>' % self.id
 
     @property
     def serialize(self):

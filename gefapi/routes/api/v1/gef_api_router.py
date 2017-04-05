@@ -17,7 +17,7 @@ from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFo
 
 # SCRIPT CREATION CRUD
 
-@endpoints.route('/script', methods=['POST'])
+@endpoints.route('/script', strict_slashes=False, methods=['POST'])
 @jwt_required()
 @validate_file
 def create_script():
@@ -41,7 +41,7 @@ def create_script():
     return jsonify(data=user.serialize), 200
 
 
-@endpoints.route('/script', methods=['GET'])
+@endpoints.route('/script', strict_slashes=False, methods=['GET'])
 def get_scripts():
     """Get all scripts"""
     logging.info('[ROUTER]: Getting all scripts')
@@ -53,7 +53,7 @@ def get_scripts():
     return jsonify(data=[script.serialize for script in scripts]), 200
 
 
-@endpoints.route('/script/<script>', methods=['GET'])
+@endpoints.route('/script/<script>', strict_slashes=False, methods=['GET'])
 def get_script(script):
     """Get a script"""
     logging.info('[ROUTER]: Getting script '+script)
@@ -68,7 +68,7 @@ def get_script(script):
     return jsonify(data=script.serialize), 200
 
 
-@endpoints.route('/script/<script>/logs', methods=['GET'])
+@endpoints.route('/script/<script>/logs', strict_slashes=False, methods=['GET'])
 def get_script_logs(script):
     """Get a script logs"""
     logging.info('[ROUTER]: Getting script logs of script %s ' % (script))
@@ -86,7 +86,7 @@ def get_script_logs(script):
     return jsonify(data=[log.serialize for log in logs]), 200
 
 
-@endpoints.route('/script/<script>', methods=['PATCH'])
+@endpoints.route('/script/<script>', strict_slashes=False, methods=['PATCH'])
 @jwt_required()
 @validate_file
 def update_script(script):
@@ -113,7 +113,7 @@ def update_script(script):
     return jsonify(data=script.serialize), 200
 
 
-@endpoints.route('/script/<script>', methods=['DELETE'])
+@endpoints.route('/script/<script>', strict_slashes=False, methods=['DELETE'])
 @jwt_required()
 def delete_script(script):
     """Delete a script"""
@@ -134,7 +134,7 @@ def delete_script(script):
 
 # SCRIPT EXECUTION
 
-@endpoints.route('/script/<script>/run', methods=['GET'])
+@endpoints.route('/script/<script>/run', strict_slashes=False, methods=['GET'])
 def run_script(script):
     """Run a script"""
     logging.info('[ROUTER]: Running script: '+script)
@@ -151,7 +151,7 @@ def run_script(script):
 
 # TICKET
 
-@endpoints.route('/ticket/<ticket>', methods=['GET'])
+@endpoints.route('/ticket/<ticket>', strict_slashes=False, methods=['GET'])
 def get_ticket(ticket):
     """Get a ticket"""
     logging.info('[ROUTER]: Getting ticket: '+ticket)
@@ -168,7 +168,7 @@ def get_ticket(ticket):
 
 # USER
 
-@endpoints.route('/user', methods=['POST'])
+@endpoints.route('/user', strict_slashes=False, methods=['POST'])
 @jwt_required()
 @validate_user_creation
 def create_user():
@@ -188,7 +188,7 @@ def create_user():
     return jsonify(data=user.serialize), 200
 
 
-@endpoints.route('/user', methods=['GET'])
+@endpoints.route('/user', strict_slashes=False, methods=['GET'])
 def get_users():
     logging.info('[ROUTER]: Getting all users')
     try:
@@ -199,7 +199,7 @@ def get_users():
     return jsonify(data=[user.serialize for user in users]), 200
 
 
-@endpoints.route('/user/<user>', methods=['GET'])
+@endpoints.route('/user/<user>', strict_slashes=False, methods=['GET'])
 def get_user(user):
     logging.info('[ROUTER]: Getting user'+user)
     try:
@@ -213,7 +213,7 @@ def get_user(user):
     return jsonify(data=user.serialize), 200
 
 
-@endpoints.route('/user/<user>', methods=['PATCH'])
+@endpoints.route('/user/<user>', strict_slashes=False, methods=['PATCH'])
 @jwt_required()
 @validate_user_update
 def update_user(user):
@@ -233,7 +233,7 @@ def update_user(user):
     return jsonify(data=user.serialize), 200
 
 
-@endpoints.route('/user/<user>', methods=['DELETE'])
+@endpoints.route('/user/<user>', strict_slashes=False, methods=['DELETE'])
 @jwt_required()
 def delete_user(user):
     logging.info('[ROUTER]: Deleting user'+user)

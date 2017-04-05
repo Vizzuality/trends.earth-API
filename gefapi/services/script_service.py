@@ -73,6 +73,7 @@ class ScriptService(object):
             script = Script(name=name, slug=slug, user_id=user.id)
         else:
             # Updating existing entity
+            logging.debug(script_name)
             script.name = script_name
 
         # TO DB
@@ -84,11 +85,11 @@ class ScriptService(object):
             raise error
 
         try:
-            os.rename(sent_file_path, os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz'))
-            sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz')
+            os.rename(sent_file_path, os.path.join(SETTINGS.get('UPLOAD_FOLDER'), script.slug+'.tar.gz'))
+            sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), script.slug+'.tar.gz')
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
-                tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+slug)
-            DockerBuildThread(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+slug, tag_image=script.slug)
+                tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug)
+            DockerBuildThread(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
 
         except Exception as error:
             raise error
@@ -143,7 +144,7 @@ class ScriptService(object):
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
         if user.id != script.user_id:
             raise NotAllowed(message='Operation not allowed to this user')
-        return create_script(sent_file, user, script)
+        return ScriptService.create_script(sent_file, user, script)
 
     @staticmethod
     def delete_script(script_id):
