@@ -11,7 +11,7 @@ from flask_jwt import jwt_required, current_identity
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, validate_file
 from gefapi.services import UserService, ScriptService
-from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated
 
 
 # SCRIPT CREATION CRUD
@@ -29,6 +29,9 @@ def create_script():
     try:
         user = ScriptService.create_script(sent_file, user)
     except InvalidFile as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
+    except ScriptDuplicated as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=400, detail=e.message)
     except Exception as e:

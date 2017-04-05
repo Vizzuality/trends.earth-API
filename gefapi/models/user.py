@@ -20,15 +20,13 @@ class User(db.Model):
     id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    jwt = db.Column(db.Text())
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     role = db.Column(db.String(10))
     scripts = db.relationship('Script', backref='user', lazy='dynamic')
 
-    def __init__(self, email, password, jwt=None, role='USER'):
+    def __init__(self, email, password, role='USER'):
         self.email = email
         self.password = self.set_password(password=password)
-        self.jwt = jwt
         self.role = role
 
     def __repr__(self):
