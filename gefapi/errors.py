@@ -39,3 +39,7 @@ class ScriptDuplicated(Error):
 
 class NotAllowed(Error):
     pass
+
+
+class TicketNotFound(Error):
+    pass

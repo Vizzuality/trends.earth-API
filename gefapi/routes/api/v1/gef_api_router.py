@@ -11,8 +11,8 @@ from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, validate_file
-from gefapi.services import UserService, ScriptService
-from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed
+from gefapi.services import UserService, ScriptService, ExecutionService
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed, TicketNotFound
 
 
 # SCRIPT CREATION CRUD
@@ -97,7 +97,7 @@ def update_script(script):
         sent_file.filename = 'script'
     user = current_identity
     try:
-        user = ScriptService.update_script(script, sent_file, user)
+        script = ScriptService.update_script(script, sent_file, user)
     except InvalidFile as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=400, detail=e.message)
@@ -110,7 +110,7 @@ def update_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=script.serialize), 200
 
 
 @endpoints.route('/script/<script>', methods=['DELETE'])
@@ -132,20 +132,38 @@ def delete_script(script):
     return jsonify(data=script.serialize), 200
 
 
-# SCRIPT EXECUTION @TODO
+# SCRIPT EXECUTION
 
 @endpoints.route('/script/<script>/run', methods=['GET'])
-@jwt_required()
 def run_script(script):
     """Run a script"""
-    pass
+    logging.info('[ROUTER]: Running script: '+script)
+    try:
+        execution = ExecutionService.create_execution(script)
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=execution.serialize), 200
 
 
-# TICKET @TODO
+# TICKET
 
 @endpoints.route('/ticket/<ticket>', methods=['GET'])
 def get_ticket(ticket):
-    pass
+    """Get a ticket"""
+    logging.info('[ROUTER]: Getting ticket: '+ticket)
+    try:
+        ticket = ExecutionService.get_execution(ticket)
+    except TicketNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=ticket.serialize), 200
 
 
 # USER

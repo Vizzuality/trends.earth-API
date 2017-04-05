@@ -18,16 +18,13 @@ class Execution(db.Model):
     id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     start_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     end_date = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
-    status = db.Column(db.String(10))
+    status = db.Column(db.String(10), default='PENDING')
     progress = db.Column(db.Integer(), default=0)
-    results = db.Column(JSONB)
+    results = db.Column(JSONB, default={})
     logs = db.relationship('ExecutionLog', backref='execution', lazy='dynamic')
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
 
-    def __init__(self, progress, script_id, status='PENDING', results=None):
-        self.status = status
-        self.progress = progress
-        self.results = results
+    def __init__(self, script_id):
         self.script_id = script_id
 
     def __repr__(self):
@@ -36,4 +33,18 @@ class Execution(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
-        pass
+        return {
+            'id': self.id,
+            'script_id': self.script_id,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'status': self.status,
+            'progress': self.progress,
+            'results': self.results,
+            'logs': self.serialize_logs
+        }
+
+    @property
+    def serialize_logs(self):
+        """Serialize Logs"""
+        return [item.serialize for item in self.logs]

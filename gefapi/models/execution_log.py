@@ -30,4 +30,9 @@ class ExecutionLog(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
-        pass
+        return {
+            'id': self.id,
+            'text': self.text,
+            'register_date': self.register_date,
+            'script_id': self.script_id
+        }
