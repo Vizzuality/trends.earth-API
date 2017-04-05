@@ -12,7 +12,7 @@ from flask_jwt import jwt_required, current_identity
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, validate_file
 from gefapi.services import UserService, ScriptService
-from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed
 
 
 # SCRIPT CREATION CRUD
@@ -67,6 +67,7 @@ def get_script(script):
         return error(status=500, detail='Generic Error')
     return jsonify(data=script.serialize), 200
 
+
 @endpoints.route('/script/<script>/logs', methods=['GET'])
 def get_script_logs(script):
     """Get a script logs"""
@@ -85,13 +86,31 @@ def get_script_logs(script):
     return jsonify(data=[log.serialize for log in logs]), 200
 
 
-
 @endpoints.route('/script/<script>', methods=['PATCH'])
 @jwt_required()
+@validate_file
 def update_script(script):
     """Update a script"""
-    logging.info('[ROUTER]: Updating script: '+script)
-    pass
+    logging.info('[ROUTER]: Updating a script')
+    sent_file = request.files.get('file')
+    if sent_file.filename == '':
+        sent_file.filename = 'script'
+    user = current_identity
+    try:
+        user = ScriptService.update_script(script, sent_file, user)
+    except InvalidFile as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except NotAllowed as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=403, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
 
 
 @endpoints.route('/script/<script>', methods=['DELETE'])
@@ -119,11 +138,6 @@ def delete_script(script):
 @jwt_required()
 def run_script(script):
     """Run a script"""
-    pass
-
-
-@endpoints.route('/script/<script>/logs', methods=['GET'])
-def script_logs(script):
     pass
 
 

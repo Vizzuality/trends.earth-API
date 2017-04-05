@@ -17,7 +17,7 @@ from gefapi.services import DockerBuildThread
 from gefapi import db
 from gefapi.models import Script, ScriptLog
 from gefapi.config import SETTINGS
-from gefapi.errors import InvalidFile, ScriptNotFound, ScriptDuplicated
+from gefapi.errors import InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed
 
 
 def allowed_file(filename):
@@ -32,8 +32,7 @@ class ScriptService(object):
     """Script Class"""
 
     @staticmethod
-    def create_script(sent_file, user):
-        logging.debug(sent_file)
+    def create_script(sent_file, user, script=None):
         logging.info('[SERVICE]: Creating script')
         if sent_file and allowed_file(sent_file.filename):
             logging.info('[SERVICE]: Allowed format')
@@ -64,17 +63,27 @@ class ScriptService(object):
         except Exception as error:
             raise error
 
-        name = script_name
-        slug = slugify(script_name)
-        currentScript = Script.query.filter_by(slug=slug).first()
-        if currentScript:
-            raise ScriptDuplicated(message='Script with name '+name+' generates an existing script slug')
-        user_id = user.id
-        script = Script(name=name, slug=slug, user_id=user_id)
+        if script is None:
+            # Creating new entity
+            name = script_name
+            slug = slugify(script_name)
+            currentScript = Script.query.filter_by(slug=slug).first()
+            if currentScript:
+                raise ScriptDuplicated(message='Script with name '+name+' generates an existing script slug')
+            script = Script(name=name, slug=slug, user_id=user.id)
+        else:
+            # Updating existing entity
+            script.name = script_name
+
+        # TO DB
         try:
             logging.info('[DB]: ADD')
             db.session.add(script)
             db.session.commit()
+        except Exception as error:
+            raise error
+
+        try:
             os.rename(sent_file_path, os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz'))
             sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), slug+'.tar.gz')
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
@@ -111,7 +120,7 @@ class ScriptService(object):
     def get_script_logs(script_id, start_date):
         logging.info('[SERVICE]: Getting script logs of script %s: ' % (script_id))
         logging.info('[DB]: QUERY')
-        try:            
+        try:
             script = Script.query.get(script_id)
         except ValueError:
             script = Script.query.filter_by(slug=script_id).first()
@@ -123,14 +132,18 @@ class ScriptService(object):
         if start_date:
             logging.debug(start_date)
             return ScriptLog.query.filter(ScriptLog.script_id == script.id, ScriptLog.register_date > start_date).order_by(ScriptLog.register_date).all()
-            
+
         else:
             return script.logs
 
-    @staticmethod
-    def update_script(script, user_id):
-        logging.info('[SERVICE]: Updating script')  # @TODO
-        pass
+    def update_script(script_id, sent_file, user):
+        logging.info('[SERVICE]: Updating script')
+        script = ScriptService.get_script(script_id)
+        if not script:
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        if user.id != script.user_id:
+            raise NotAllowed(message='Operation not allowed to this user')
+        return create_script(sent_file, user, script)
 
     @staticmethod
     def delete_script(script_id):
