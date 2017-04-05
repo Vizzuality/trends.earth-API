@@ -11,6 +11,7 @@ import json
 from uuid import UUID
 
 from werkzeug.utils import secure_filename
+from slugify import slugify
 
 from gefapi.services import DockerBuildThread
 from gefapi import db
@@ -64,7 +65,10 @@ class ScriptService(object):
             raise error
 
         name = script_name
-        slug = script_name  # @TODO
+        slug = slugify(script_name)
+        currentScript = Script.query.filter_by(slug=slug).first()
+        if currentScript:
+            raise ScriptDuplicated(message='Script with name '+name+' generates an existing script slug')
         user_id = user.id
         script = Script(name=name, slug=slug, user_id=user_id)
         try:
@@ -76,7 +80,6 @@ class ScriptService(object):
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+slug)
             DockerBuildThread(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+slug, tag_image=script.slug)
-
 
         except Exception as error:
             raise error

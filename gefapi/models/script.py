@@ -15,8 +15,8 @@ db.GUID = GUID
 class Script(db.Model):
     """Script Model"""
     id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
-    name = db.Column(db.String(120), unique=True, nullable=False)
-    slug = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
     status = db.Column(db.String(80), nullable=False, default='PENDING')
@@ -36,6 +36,7 @@ class Script(db.Model):
         """Return object data in easily serializeable format"""
         return {
             'id': self.id,
+            'name': self.name,
             'slug': self.slug,
             'created_at': self.created_at,
             'user_id': self.user_id,
