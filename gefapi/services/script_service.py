@@ -13,7 +13,7 @@ from uuid import UUID
 from werkzeug.utils import secure_filename
 from slugify import slugify
 
-from gefapi.services import build_run
+from gefapi.services import docker_build
 from gefapi import db
 from gefapi.models import Script, ScriptLog
 from gefapi.config import SETTINGS
@@ -89,7 +89,7 @@ class ScriptService(object):
             sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), script.slug+'.tar.gz')
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug)
-            result = build_run.delay(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
+            result = docker_build.delay(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
             
 
         except Exception as error:
