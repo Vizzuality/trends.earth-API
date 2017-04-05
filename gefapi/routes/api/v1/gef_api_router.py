@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import dateutil.parser
 import logging
 
 from flask import jsonify, request
@@ -62,6 +63,24 @@ def get_script(script):
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
     return jsonify(data=script.serialize), 200
+
+@endpoints.route('/script/<script>/logs', methods=['GET'])
+def get_script_logs(script):
+    """Get a script logs"""
+    logging.info('[ROUTER]: Getting script logs of script %s ' % (script))
+    try:
+        start = request.args.get('start', None)
+        if start:
+            start = dateutil.parser.parse(start)
+        logs = ScriptService.get_script_logs(script, start)
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=[log.serialize for log in logs]), 200
+
 
 
 @endpoints.route('/script/<script>', methods=['PATCH'])

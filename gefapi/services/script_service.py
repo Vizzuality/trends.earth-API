@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 
 from gefapi.services import DockerBuildThread
 from gefapi import db
-from gefapi.models import Script
+from gefapi.models import Script, ScriptLog
 from gefapi.config import SETTINGS
 from gefapi.errors import InvalidFile, ScriptNotFound, ScriptDuplicated
 
@@ -44,7 +44,7 @@ class ScriptService(object):
                     os.makedirs(SETTINGS.get('UPLOAD_FOLDER'))
                 sent_file.save(sent_file_path)
             except Exception as e:
-                print(e)
+                logging.error(e)
                 raise e
             logging.info('[SERVICE]: File saved')
         else:
@@ -52,7 +52,6 @@ class ScriptService(object):
 
         try:
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
-                print(tar.getnames())
                 if 'configuration.json' not in tar.getnames():
                     raise InvalidFile(message='Invalid File')
                 config_file = tar.extractfile(member='configuration.json')
@@ -104,6 +103,26 @@ class ScriptService(object):
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
         return script
+
+    @staticmethod
+    def get_script_logs(script_id, start_date):
+        logging.info('[SERVICE]: Getting script logs of script %s: ' % (script_id))
+        logging.info('[DB]: QUERY')
+        try:            
+            script = Script.query.get(script_id)
+        except ValueError:
+            script = Script.query.filter_by(slug=script_id).first()
+        except Exception as error:
+            raise error
+        if not script:
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+
+        if start_date:
+            logging.debug(start_date)
+            return ScriptLog.query.filter(ScriptLog.script_id == script.id, ScriptLog.register_date > start_date).order_by(ScriptLog.register_date).all()
+            
+        else:
+            return script.logs
 
     @staticmethod
     def update_script(script, user_id):
