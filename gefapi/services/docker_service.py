@@ -42,12 +42,14 @@ class DockerBuildThread(object):
         db.session.add(script)
         db.session.commit()
         logging.debug('Building...')
-        correct = DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
-        logging.debug('Changing status')
+        correct, log = DockerService.build(script_id=self.script_id, path=self.path, tag_image=self.tag_image)
+        logging.debug('Changing status')        
         script = Script.query.get(self.script_id)
         if correct:
+            logging.debug('Correct build')
             script.status = 'SUCCESS'
         else:
+            logging.debug('Fail build')
             script.status = 'FAIL'
         db.session.add(script)
         db.session.commit()
