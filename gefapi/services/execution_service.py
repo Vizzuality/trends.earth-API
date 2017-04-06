@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import logging
 from uuid import UUID
 
@@ -15,7 +14,10 @@ from gefapi.config import SETTINGS
 
 
 def dict_to_query(params):
-    pass
+    query = '?'
+    for key in params.keys():
+        query += key+'='+params.get(key)+'&'
+    return query[0:-1]
 
 
 class ExecutionService(object):
@@ -36,11 +38,8 @@ class ExecutionService(object):
             raise error
 
         try:
-            environment = {
-                'EE_PRIVATE_KEY': SETTINGS.get('EE_PRIVATE_KEY', None)
-            }
-            params = json.dumps(params)
-            #  @TODO dict_to_query
+            environment = SETTINGS.get('environment', {})
+            params = dict_to_query(params)
             docker_run.delay(execution.id, script.slug, environment, params)
         except Exception as e:
             raise e

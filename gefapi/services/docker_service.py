@@ -129,7 +129,7 @@ class DockerService(object):
         container = None
         try:
             environment['ENV'] = 'dev'
-            container = docker_client.containers.run(image=REGISTRY_URL+'/'+image, command=params, environment=environment, detach=True, name='execution-'+str(execution_id), auto_remove=True)            
+            container = docker_client.containers.run(image=REGISTRY_URL+'/'+image, command=params, environment=environment, detach=True, name='execution-'+str(execution_id))
         except docker.errors.ImageNotFound as error:
             logging.error('Image not found', error)
             return False, error
