@@ -90,7 +90,7 @@ class ScriptService(object):
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug)
             result = docker_build.delay(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
-            
+
 
         except Exception as error:
             raise error
@@ -134,7 +134,6 @@ class ScriptService(object):
         if start_date:
             logging.debug(start_date)
             return ScriptLog.query.filter(ScriptLog.script_id == script.id, ScriptLog.register_date > start_date).order_by(ScriptLog.register_date).all()
-
         else:
             return script.logs
 

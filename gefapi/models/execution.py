@@ -25,8 +25,9 @@ class Execution(db.Model):
     logs = db.relationship('ExecutionLog', backref='execution', lazy='dynamic')
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
 
-    def __init__(self, script_id):
+    def __init__(self, script_id, params):
         self.script_id = script_id
+        self.params = params
 
     def __repr__(self):
         return '<Execution %r>' % self.id

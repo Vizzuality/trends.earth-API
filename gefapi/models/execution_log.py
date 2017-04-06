@@ -37,5 +37,5 @@ class ExecutionLog(db.Model):
             'text': self.text,
             'level': self.level,
             'register_date': self.register_date.isoformat(),
-            'script_id': self.script_id
+            'execution_id': self.execution_id
         }

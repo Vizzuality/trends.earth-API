@@ -57,3 +57,14 @@ def validate_execution_update(func):
             return error(status=400, detail='Status, progress or results are required')
         return func(*args, **kwargs)
     return wrapper
+
+
+def validate_execution_log_creation(func):
+    """Execution Log Creation Validation"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        json_data = request.get_json()
+        if 'text' not in json_data or 'level' not in json_data:
+            return error(status=400, detail='Text and level are required')
+        return func(*args, **kwargs)
+    return wrapper

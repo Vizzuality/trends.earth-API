@@ -9,7 +9,7 @@ import logging
 from uuid import UUID
 
 from gefapi import db
-from gefapi.models import Execution
+from gefapi.models import Execution, ExecutionLog
 from gefapi.services import ScriptService, docker_run
 from gefapi.config import SETTINGS
 from gefapi.errors import ExecutionNotFound
@@ -31,7 +31,7 @@ class ExecutionService(object):
         script = ScriptService.get_script(script_id)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
-        execution = Execution(script_id=script.id)
+        execution = Execution(script_id=script.id, params=params)
         try:
             logging.info('[DB]: ADD')
             db.session.add(execution)
@@ -86,3 +86,39 @@ class ExecutionService(object):
         except Exception as error:
             raise error
         return execution
+
+    @staticmethod
+    def create_execution_log(log, execution_id):
+        logging.info('[SERVICE]: Creating execution log')
+        text = log.get('text', None)
+        level = log.get('level', None)
+        if text is None or level is None:
+            raise Exception
+        execution = ExecutionService.get_execution(execution_id=execution_id)
+        if not execution:
+            raise ExecutionNotFound(message='Execution with id '+execution_id+' does not exist')
+        execution_log = ExecutionLog(text=text, level=level, execution_id=execution.id)
+        try:
+            logging.info('[DB]: ADD')
+            db.session.add(execution_log)
+            db.session.commit()
+        except Exception as error:
+            raise error
+        return execution_log
+
+    @staticmethod
+    def get_execution_logs(execution_id, start_date):
+        logging.info('[SERVICE]: Getting execution logs of execution %s: ' % (execution_id))
+        logging.info('[DB]: QUERY')
+        try:
+            execution = ExecutionService.get_execution(execution_id=execution_id)
+        except Exception as error:
+            raise error
+        if not execution:
+            raise ExecutionNotFound(message='Execution with id '+execution_id+' does not exist')
+
+        if start_date:
+            logging.debug(start_date)
+            return ExecutionLog.query.filter(ExecutionLog.execution_id == execution.id, ExecutionLog.register_date > start_date).order_by(ExecutionLog.register_date).all()
+        else:
+            return execution.logs

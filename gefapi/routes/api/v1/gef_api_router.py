@@ -10,7 +10,7 @@ from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints, error
-from gefapi.validators import validate_user_creation, validate_user_update, validate_file, validate_execution_update
+from gefapi.validators import validate_user_creation, validate_user_update, validate_file, validate_execution_update, validate_execution_log_creation
 from gefapi.services import UserService, ScriptService, ExecutionService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed, ExecutionNotFound
 
@@ -67,7 +67,7 @@ def get_script(script):
     return jsonify(data=script.serialize), 200
 
 
-@endpoints.route('/script/<script>/logs', strict_slashes=False, methods=['GET'])
+@endpoints.route('/script/<script>/log', strict_slashes=False, methods=['GET'])
 def get_script_logs(script):
     """Get a script logs"""
     logging.info('[ROUTER]: Getting script logs of script %s ' % (script))
@@ -183,8 +183,46 @@ def update_execution(execution):
     return jsonify(data=execution.serialize), 200
 
 
-# USER
+@endpoints.route('/execution/<execution>/log', strict_slashes=False, methods=['GET'])
+def get_execution_logs(execution):
+    """Get the exectuion logs"""
+    logging.info('[ROUTER]: Getting exectuion logs of execution %s ' % (execution))
+    try:
+        start = request.args.get('start', None)
+        if start:
+            start = dateutil.parser.parse(start)
+        logs = ExecutionService.get_execution_logs(execution, start)
+    except ExecutionNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=[log.serialize for log in logs]), 200
 
+
+@endpoints.route('/execution/<execution>/log', strict_slashes=False, methods=['POST'])
+@jwt_required()
+@validate_execution_log_creation
+def create_execution_log(execution):
+    """Create log of an execution"""
+    logging.info('[ROUTER]: Creating execution log for '+execution)
+    body = request.get_json()
+    user = current_identity
+    if user.role != 'ADMIN' or user.email != 'gef@gef.com':
+        return error(status=403, detail='Forbidden')
+    try:
+        log = ExecutionService.create_execution_log(body, execution)
+    except ExecutionNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=log.serialize), 200
+
+
+# USER
 @endpoints.route('/user', strict_slashes=False, methods=['POST'])
 @jwt_required()
 @validate_user_creation
