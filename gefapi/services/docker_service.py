@@ -50,7 +50,7 @@ def docker_run(execution_id, image, environment, params):
     logging.info('[THREAD] Running script with params %s'%(params))
     logging.debug('Obtaining execution with id %s' % (execution_id));
     execution = Execution.query.get(execution_id)
-    execution.status = 'RUNNING'
+    execution.status = 'READY'
     db.session.add(execution)
     db.session.commit()
     logging.debug('Running...')
@@ -128,7 +128,7 @@ class DockerService(object):
         logging.info('Running %s image with params %s' % (image, params))
         container = None
         try:
-            environment['ENV'] = 'dev'
+            environment['ENV'] = 'prod'
             container = docker_client.containers.run(image=REGISTRY_URL+'/'+image, command=params, environment=environment, detach=True, name='execution-'+str(execution_id))
         except docker.errors.ImageNotFound as error:
             logging.error('Image not found', error)

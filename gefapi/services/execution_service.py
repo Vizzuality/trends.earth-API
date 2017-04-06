@@ -16,7 +16,7 @@ from gefapi.errors import ExecutionNotFound
 
 
 def dict_to_query(params):
-    query = '?'
+    query = ''
     for key in params.keys():
         query += key+'='+params.get(key)+'&'
     return query[0:-1]
@@ -41,6 +41,9 @@ class ExecutionService(object):
 
         try:
             environment = SETTINGS.get('environment', {})
+            environment['EXECUTION_ID'] = execution.id
+            environment['EMAIL'] = 'gef@gef.com'  # @TODO
+            environment['PASSWORD'] = 'pepe'  # @TODO
             params = dict_to_query(params)
             docker_run.delay(execution.id, script.slug, environment, params)
         except Exception as e:

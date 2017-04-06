@@ -10,6 +10,8 @@ develop:
     DEBUG: "True"
     FLASK_APP: main.py
     DOCKER_URL: unix:///tmp/docker.sock
+    EE_SERVICE_ACCOUNT: ${EE_SERVICE_ACCOUNT}
+    EE_PRIVATE_KEY: ${EE_PRIVATE_KEY}
   command: develop
   volumes:
     - ./gefapi:/opt/gef-api/gefapi
