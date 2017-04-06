@@ -12,7 +12,7 @@ from gefapi import db
 from gefapi.models import Execution, ExecutionLog
 from gefapi.services import ScriptService, docker_run
 from gefapi.config import SETTINGS
-from gefapi.errors import ExecutionNotFound
+from gefapi.errors import ExecutionNotFound, ScriptNotFound, ScriptStateNotValid
 
 
 def dict_to_query(params):
@@ -31,6 +31,8 @@ class ExecutionService(object):
         script = ScriptService.get_script(script_id)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        if script.status != 'SUCCESS':
+            raise ScriptStateNotValid(message='Script with id '+script_id+' is not BUILT')
         execution = Execution(script_id=script.id, params=params)
         try:
             logging.info('[DB]: ADD')
@@ -78,6 +80,7 @@ class ExecutionService(object):
             execution.status = status
             if status == 'FINISHED':
                 execution.end_date = datetime.datetime.utcnow()
+                execution.progress = 100
         if progress is not None:
             execution.progress = progress
         if results is not None:

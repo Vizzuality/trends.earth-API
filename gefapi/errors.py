@@ -43,3 +43,7 @@ class NotAllowed(Error):
 
 class ExecutionNotFound(Error):
     pass
+
+
+class ScriptStateNotValid(Error):
+    pass

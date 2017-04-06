@@ -10,9 +10,11 @@ from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints, error
-from gefapi.validators import validate_user_creation, validate_user_update, validate_file, validate_execution_update, validate_execution_log_creation
+from gefapi.validators import validate_user_creation, validate_user_update, \
+    validate_file, validate_execution_update, validate_execution_log_creation
 from gefapi.services import UserService, ScriptService, ExecutionService
-from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed, ExecutionNotFound
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, \
+    ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid
 
 
 # SCRIPT CREATION
@@ -141,6 +143,9 @@ def run_script(script):
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
+    except ScriptStateNotValid as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
