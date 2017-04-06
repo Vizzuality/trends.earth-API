@@ -1,4 +1,4 @@
-"""empty message
+"""Intial database
 
 Revision ID: 9eb257aebbe6
 Revises: 
@@ -60,8 +60,9 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('execution_log',
-    sa.Column('id', GUID(), autoincrement=False, nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('text', sa.Text(), nullable=True),
+    sa.Column('level', sa.String(length=80), nullable=False),
     sa.Column('register_date', sa.DateTime(), nullable=True),
     sa.Column('execution_id', GUID(), nullable=True),
     sa.ForeignKeyConstraint(['execution_id'], ['execution.id'], ),
