@@ -10,13 +10,12 @@ from flask import jsonify, request
 from flask_jwt import jwt_required, current_identity
 
 from gefapi.routes.api.v1 import endpoints, error
-from gefapi.validators import validate_user_creation, validate_user_update, validate_file
+from gefapi.validators import validate_user_creation, validate_user_update, validate_file, validate_execution_update
 from gefapi.services import UserService, ScriptService, ExecutionService
-from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed, TicketNotFound
+from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, ScriptDuplicated, NotAllowed, ExecutionNotFound
 
 
-# SCRIPT CREATION CRUD
-
+# SCRIPT CREATION
 @endpoints.route('/script', strict_slashes=False, methods=['POST'])
 @jwt_required()
 @validate_file
@@ -133,7 +132,6 @@ def delete_script(script):
 
 
 # SCRIPT EXECUTION
-
 @endpoints.route('/script/<script>/run', strict_slashes=False, methods=['GET'])
 def run_script(script):
     """Run a script"""
@@ -149,21 +147,40 @@ def run_script(script):
     return jsonify(data=execution.serialize), 200
 
 
-# TICKET
-
-@endpoints.route('/ticket/<ticket>', strict_slashes=False, methods=['GET'])
-def get_ticket(ticket):
-    """Get a ticket"""
-    logging.info('[ROUTER]: Getting ticket: '+ticket)
+@endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
+def get_execution(execution):
+    """Get an execution"""
+    logging.info('[ROUTER]: Getting execution: '+execution)
     try:
-        ticket = ExecutionService.get_execution(ticket)
-    except TicketNotFound as e:
+        execution = ExecutionService.get_execution(execution)
+    except ExecutionNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=ticket.serialize), 200
+    return jsonify(data=execution.serialize), 200
+
+
+@endpoints.route('/execution/<execution>', strict_slashes=False, methods=['PATCH'])
+@jwt_required()
+@validate_execution_update
+def update_execution(execution):
+    """Update an execution"""
+    logging.info('[ROUTER]: Updating execution '+execution)
+    body = request.get_json()
+    user = current_identity
+    if user.role != 'ADMIN' or user.email != 'gef@gef.com':
+        return error(status=403, detail='Forbidden')
+    try:
+        execution = ExecutionService.update_execution(body, execution)
+    except ExecutionNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=execution.serialize), 200
 
 
 # USER
@@ -172,6 +189,7 @@ def get_ticket(ticket):
 @jwt_required()
 @validate_user_creation
 def create_user():
+    """Create an user"""
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
     identity = current_identity
@@ -190,6 +208,7 @@ def create_user():
 
 @endpoints.route('/user', strict_slashes=False, methods=['GET'])
 def get_users():
+    """Get users"""
     logging.info('[ROUTER]: Getting all users')
     try:
         users = UserService.get_users()
@@ -201,6 +220,7 @@ def get_users():
 
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['GET'])
 def get_user(user):
+    """Get an user"""
     logging.info('[ROUTER]: Getting user'+user)
     try:
         user = UserService.get_user(user)
@@ -217,6 +237,7 @@ def get_user(user):
 @jwt_required()
 @validate_user_update
 def update_user(user):
+    """Update an user"""
     logging.info('[ROUTER]: Updating user'+user)
     body = request.get_json()
     identity = current_identity
@@ -236,6 +257,7 @@ def update_user(user):
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['DELETE'])
 @jwt_required()
 def delete_user(user):
+    """Delete an user"""
     logging.info('[ROUTER]: Deleting user'+user)
     identity = current_identity
     if identity.role != 'ADMIN':

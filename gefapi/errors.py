@@ -41,5 +41,5 @@ class NotAllowed(Error):
     pass
 
 
-class TicketNotFound(Error):
+class ExecutionNotFound(Error):
     pass
