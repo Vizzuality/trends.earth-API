@@ -26,6 +26,7 @@ COPY gunicorn.py /opt/$NAME/gunicorn.py
 WORKDIR /opt/$NAME
 
 COPY ./gefapi /opt/$NAME/gefapi
+COPY ./migrations /opt/$NAME/migrations
 COPY ./tests /opt/$NAME/tests
 RUN chown $USER:$USER /opt/$NAME
 
