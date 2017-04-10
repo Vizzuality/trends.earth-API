@@ -129,7 +129,7 @@ class DockerService(object):
         container = None
         try:
             environment['ENV'] = 'prod'
-            command = 'entrypoint.sh ' + params
+            command = './entrypoint.sh ' + params
             if os.getenv('ENVIRONMENT') != 'dev':
                 env = [k+'='+v for k,v in environment.items()]
                 logging.info(env)
