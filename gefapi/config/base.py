@@ -12,7 +12,9 @@ SETTINGS = {
     'environment': {
         'EE_PRIVATE_KEY': os.getenv('EE_PRIVATE_KEY'),
         'EE_SERVICE_ACCOUNT': os.getenv('EE_SERVICE_ACCOUNT'),
-        'API_URL': 'http://mymachine:3000'
+        'API_URL': 'http://'+ os.getenv('API_URL'),
+        'API_USER': os.getenv('API_USER'),
+        'API_PASSWORD': os.getenv('API_PASSWORD')
     },
     'SQLALCHEMY_DATABASE_URI': 'postgresql://'+os.getenv('DATABASE_ENV_POSTGRES_USER')+':'+os.getenv('DATABASE_ENV_POSTGRES_PASSWORD')+'@'+os.getenv('DATABASE_PORT_5432_TCP_ADDR')+':'+os.getenv('DATABASE_PORT_5432_TCP_PORT')+'/'+os.getenv('DATABASE_ENV_POSTGRES_DB'),
     'SECRET_KEY': 'mysecret',

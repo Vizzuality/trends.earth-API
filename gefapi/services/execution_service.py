@@ -44,8 +44,6 @@ class ExecutionService(object):
         try:
             environment = SETTINGS.get('environment', {})
             environment['EXECUTION_ID'] = execution.id
-            environment['EMAIL'] = 'gef@gef.com'  # @TODO
-            environment['PASSWORD'] = 'pepe'  # @TODO
             params = dict_to_query(params)
             docker_run.delay(execution.id, script.slug, environment, params)
         except Exception as e:
