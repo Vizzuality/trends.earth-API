@@ -12,7 +12,7 @@ SETTINGS = {
     'environment': {
         'EE_PRIVATE_KEY': os.getenv('EE_PRIVATE_KEY'),
         'EE_SERVICE_ACCOUNT': os.getenv('EE_SERVICE_ACCOUNT'),
-        'API_URL': 'http://'+ os.getenv('API_URL'),
+        'API_URL': os.getenv('API_URL'),
         'API_USER': os.getenv('API_USER'),
         'API_PASSWORD': os.getenv('API_PASSWORD')
     },

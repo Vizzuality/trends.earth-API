@@ -131,6 +131,7 @@ class DockerService(object):
             environment['ENV'] = 'prod'
             if os.getenv('ENVIRONMENT') != 'dev':
                 env = [k+'='+v for k,v in environment.items()]
+                logging.info(env)
                 container = docker_client.services.create(image=REGISTRY_URL+'/'+image, command=params, env=env, name='execution-'+str(execution_id))
             else:
                 container = docker_client.containers.run(image=REGISTRY_URL+'/'+image, command=params, environment=environment, detach=True, name='execution-'+str(execution_id))
