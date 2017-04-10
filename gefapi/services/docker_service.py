@@ -132,7 +132,7 @@ class DockerService(object):
             if os.getenv('ENVIRONMENT') != 'dev':
                 env = [k+'='+v for k,v in environment.items()]
                 logging.info(env)
-                container = docker_client.services.create(image=REGISTRY_URL+'/'+image, command=params, env=env, name='execution-'+str(execution_id), restart_policy=(condition='on-failure', delay=10, max_attempts=2, window=0))
+                container = docker_client.services.create(image=REGISTRY_URL+'/'+image, command=params, env=env, name='execution-'+str(execution_id), restart_policy=docker.types.RestartPolicy(condition='on-failure', delay=10, max_attempts=2, window=0))
             else:
                 container = docker_client.containers.run(image=REGISTRY_URL+'/'+image, command=params, environment=environment, detach=True, name='execution-'+str(execution_id))
         except docker.errors.ImageNotFound as error:
