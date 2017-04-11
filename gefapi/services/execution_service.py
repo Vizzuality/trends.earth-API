@@ -25,6 +25,14 @@ def dict_to_query(params):
 class ExecutionService(object):
     """Execution Class"""
 
+
+    @staticmethod
+    def get_executions():
+        logging.info('[SERVICE]: Getting executions')
+        logging.info('[DB]: QUERY')
+        executions = Execution.query.all()
+        return executions
+        
     @staticmethod
     def create_execution(script_id, params):
         logging.info('[SERVICE]: Creating execution')

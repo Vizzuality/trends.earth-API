@@ -152,6 +152,17 @@ def run_script(script):
     return jsonify(data=execution.serialize), 200
 
 
+@endpoints.route('/execution', strict_slashes=False, methods=['GET'])
+def get_executions(execution):
+    """Get all executions"""
+    logging.info('[ROUTER]: Getting all executions: ')
+    try:
+        execution = ExecutionService.get_executions()
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=execution.serialize), 200
+
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
 def get_execution(execution):
     """Get an execution"""
