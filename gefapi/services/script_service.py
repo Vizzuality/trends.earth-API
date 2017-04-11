@@ -119,7 +119,7 @@ class ScriptService(object):
         return script
 
     @staticmethod
-    def get_script_logs(script_id, start_date):
+    def get_script_logs(script_id, start_date, last_id):
         logging.info('[SERVICE]: Getting script logs of script %s: ' % (script_id))
         logging.info('[DB]: QUERY')
         try:
@@ -134,6 +134,8 @@ class ScriptService(object):
         if start_date:
             logging.debug(start_date)
             return ScriptLog.query.filter(ScriptLog.script_id == script.id, ScriptLog.register_date > start_date).order_by(ScriptLog.register_date).all()
+        elif last_id:
+            return ScriptLog.query.filter(ScriptLog.script_id == script.id, ScriptLog.id > last_id).order_by(ScriptLog.register_date).all()
         else:
             return script.logs
 

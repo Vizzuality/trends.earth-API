@@ -77,7 +77,8 @@ def get_script_logs(script):
         start = request.args.get('start', None)
         if start:
             start = dateutil.parser.parse(start)
-        logs = ScriptService.get_script_logs(script, start)
+        last_id = request.args.get('last-id', None)
+        logs = ScriptService.get_script_logs(script, start, last_id)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
