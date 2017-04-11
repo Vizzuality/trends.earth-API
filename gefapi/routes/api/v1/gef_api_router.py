@@ -250,6 +250,7 @@ def create_user():
 
 
 @endpoints.route('/user', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_users():
     """Get users"""
     logging.info('[ROUTER]: Getting all users')
@@ -262,6 +263,7 @@ def get_users():
 
 
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_user(user):
     """Get an user"""
     logging.info('[ROUTER]: Getting user'+user)
@@ -273,6 +275,15 @@ def get_user(user):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
+
+
+@endpoints.route('/user/me', strict_slashes=False, methods=['GET'])
+@jwt_required()
+def get_me():
+    """Get me"""
+    logging.info('[ROUTER]: Getting my user')
+    user = current_identity
     return jsonify(data=user.serialize), 200
 
 

@@ -11,6 +11,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS, cross_origin
 from gefapi.config import SETTINGS
 from gefapi.celery import make_celery
 
@@ -24,6 +25,7 @@ logging.basicConfig(
 
 # Flask App
 app = Flask(__name__)
+CORS(app)
 
 # Config
 app.config['SQLALCHEMY_DATABASE_URI'] = SETTINGS.get('SQLALCHEMY_DATABASE_URI')
