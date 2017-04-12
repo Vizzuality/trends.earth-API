@@ -299,6 +299,21 @@ def get_me():
     return jsonify(data=user.serialize), 200
 
 
+@endpoints.route('/user/<user>/recover-password', strict_slashes=False, methods=['POST'])
+def recover_password(user):
+    """Revover password"""
+    logging.info('[ROUTER]: Recovering password')
+    try:
+        user = UserService.recover_password(user)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize), 200
+
+
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['PATCH'])
 @jwt_required()
 @validate_user_update

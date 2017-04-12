@@ -4,6 +4,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import random
+import string
 import logging
 from uuid import UUID
 
@@ -48,7 +50,7 @@ class UserService(object):
 
     @staticmethod
     def get_user(user_id):
-        logging.info('[SERVICE]: Getting user'+user_id)
+        logging.info('[SERVICE]: Getting user '+user_id)
         logging.info('[DB]: QUERY')
         try:
             val = UUID(user_id, version=4)
@@ -59,6 +61,24 @@ class UserService(object):
             raise error
         if not user:
             raise UserNotFound(message='User with id '+user_id+' does not exist')
+        return user
+
+    @staticmethod
+    def recover_password(user_id):
+        logging.info('[SERVICE]: Recovering password'+user_id)
+        logging.info('[DB]: QUERY')
+        user = UserService.get_user(user_id=user_id)
+        if not user:
+            raise UserNotFound(message='User with id '+user_id+' does not exist')
+        #  @TODO send password to email
+        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+        user.password = password
+        try:
+            logging.info('[DB]: ADD')
+            db.session.add(user)
+            db.session.commit()
+        except Exception as error:
+            raise error
         return user
 
     @staticmethod
