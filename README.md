@@ -2,7 +2,7 @@
 
 This project belongs to the GEF Project.
 
-This repo implements the API for the GEF Environment. It implements the Scripts, Users and Executions management.
+This repo implements the API of the GEF Environment. It implements the Scripts, Users and Executions management.
 
 Check out the other parts of the GEF project:
 
