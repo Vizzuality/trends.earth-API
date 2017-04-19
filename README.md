@@ -14,7 +14,7 @@ Check out the other parts of the GEF project:
 
 ### Requirements
 
-You need to install Docker in your machine if you have not already installed it [Docker](https://www.docker.com/)
+You need to install Docker in your machine if you haven't already [Docker](https://www.docker.com/)
 
 ### Technology
 

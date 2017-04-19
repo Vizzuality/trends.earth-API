@@ -1,8 +1,7 @@
-develop:
+test:
   extends:
     file: base.yml
     service: base
   container_name: gef-api-test
-  environment:
-    DEBUG: "True"
   command: test
+  restart: always
