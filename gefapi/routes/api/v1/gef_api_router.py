@@ -14,7 +14,7 @@ from gefapi.validators import validate_user_creation, validate_user_update, \
     validate_file, validate_execution_update, validate_execution_log_creation
 from gefapi.services import UserService, ScriptService, ExecutionService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, \
-    ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid
+    ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid, EmailError
 
 
 # SCRIPT CREATION
@@ -308,6 +308,9 @@ def recover_password(user):
     except UserNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
+    except EmailError as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=500, detail=e.message)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')

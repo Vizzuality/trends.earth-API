@@ -12,6 +12,7 @@ SETTINGS = {
     'environment': {
         'EE_PRIVATE_KEY': os.getenv('EE_PRIVATE_KEY'),
         'EE_SERVICE_ACCOUNT': os.getenv('EE_SERVICE_ACCOUNT'),
+        'SPARKPOST_API_KEY': os.getenv('SPARKPOST_API_KEY'),
         'API_URL': os.getenv('API_URL'),
         'API_USER': os.getenv('API_USER'),
         'API_PASSWORD': os.getenv('API_PASSWORD')

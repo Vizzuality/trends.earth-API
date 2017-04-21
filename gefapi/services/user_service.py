@@ -11,7 +11,8 @@ from uuid import UUID
 
 from gefapi import db
 from gefapi.models import User
-from gefapi.errors import UserNotFound, UserDuplicated, AuthError
+from gefapi.errors import UserNotFound, UserDuplicated, AuthError, EmailError
+from gefapi.services import EmailService
 
 ROLES = ['ADMIN', 'MANAGER', 'USER']
 
@@ -70,13 +71,20 @@ class UserService(object):
         user = UserService.get_user(user_id=user_id)
         if not user:
             raise UserNotFound(message='User with id '+user_id+' does not exist')
-        #  @TODO send password to email
         password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-        user.password = password
+        user.password = user.set_password(password=password)
         try:
             logging.info('[DB]: ADD')
             db.session.add(user)
             db.session.commit()
+            try:
+                email = EmailService.send_html_email(
+                    recipients=[user.email],
+                    html='<p>'+password+'</p>',
+                    subject='[GEF] Recover password'
+                )
+            except EmailError as error:
+                raise error
         except Exception as error:
             raise error
         return user

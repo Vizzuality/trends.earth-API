@@ -47,3 +47,7 @@ class ExecutionNotFound(Error):
 
 class ScriptStateNotValid(Error):
     pass
+
+
+class EmailError(Error):
+    pass
