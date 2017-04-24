@@ -55,8 +55,6 @@ from gefapi.jwt import authenticate, identity
 jwt = JWT(app, authenticate, identity)
 
 
-
-
 @app.errorhandler(403)
 def forbidden(e):
     return error(status=403, detail='Forbidden')

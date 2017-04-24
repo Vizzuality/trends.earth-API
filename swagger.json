@@ -1,0 +1,1021 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "GEF API",
+    "description": "GEF API Documentation",
+    "termsOfService": "TODO",
+    "contact": {
+      "name": "TODO",
+      "url": "http://todo.com",
+      "email": "todo@too.com"
+    },
+    "license": {
+      "name": "todo",
+      "url": "http://todo.com"
+    },
+    "version": "1.0.0"
+  },
+  "host": "TODO",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "consumes": [
+    "application/vnd.api+json"
+  ],
+  "produces": [
+    "application/vnd.api+json"
+  ],
+  "securityDefinitions": {
+    "UserSecurity": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "JWT AUTH ```Bearer {{TOKEN}}```"
+    }
+  },
+  "paths": {
+    "/script": {
+      "get": {
+        "description": "Get all scripts",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Scripts obtained",
+            "schema": {
+              "$ref": "#/definitions/Scripts"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new script",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/vnd.api+json",
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "description": "The uploaded file data",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created script",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "400": {
+            "description": "InvalidFile, ScriptDuplicated error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/script/{script}": {
+      "get": {
+        "description": "Get a script by slug or id",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "script",
+            "in": "path",
+            "description": "Script id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Script object",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "404": {
+            "description": "ScriptNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Update a script",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "script",
+            "in": "path",
+            "description": "Script id or slug",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated script",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "400": {
+            "description": "InvalidFile error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "NotAllowed error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "ScriptNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a script",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "script",
+            "in": "path",
+            "description": "Script id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated script",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "404": {
+            "description": "ScriptNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/script/{script}/log": {
+      "get": {
+        "description": "Get script logs",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "script",
+            "in": "path",
+            "description": "Script id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs",
+            "schema": {
+              "$ref": "#/definitions/Logs"
+            }
+          },
+          "404": {
+            "description": "ScriptNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/script/{script}/run": {
+      "get": {
+        "description": "Run a script. Create an execution",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "script",
+            "in": "path",
+            "description": "Script id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs",
+            "schema": {
+              "$ref": "#/definitions/Execution"
+            }
+          },
+          "400": {
+            "description": "ScriptStateNotValid error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "ScriptNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/execution": {
+      "get": {
+        "description": "Get all executions",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Executions",
+            "schema": {
+              "$ref": "#/definitions/Executions"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/execution/{execution}": {
+      "get": {
+        "description": "Get a execution by id",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution",
+            "in": "path",
+            "description": "Execution id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Execution object",
+            "schema": {
+              "$ref": "#/definitions/Execution"
+            }
+          },
+          "404": {
+            "description": "ExecutionNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an execution status and/or progress",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution",
+            "in": "path",
+            "description": "Execution id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Execution"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated script",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "404": {
+            "description": "ExecutionNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/execution/{execution}/log": {
+      "get": {
+        "description": "Get execution logs",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution",
+            "in": "path",
+            "description": "execution id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs",
+            "schema": {
+              "$ref": "#/definitions/Logs"
+            }
+          },
+          "404": {
+            "description": "ExecutionNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Post execution logs",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "execution",
+            "in": "path",
+            "description": "execution id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Log"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs",
+            "schema": {
+              "$ref": "#/definitions/Logs"
+            }
+          },
+          "404": {
+            "description": "ExecutionNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "description": "Get all users",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "users obtained",
+            "schema": {
+              "$ref": "#/definitions/Users"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new user",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/vnd.api+json",
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created user",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "UserDuplicated error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/user/{user}": {
+      "get": {
+        "description": "Get a user by email or id",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "user id or email",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User object",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "UserNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "user id or email",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated user",
+            "schema": {
+              "$ref": "#/definitions/Script"
+            }
+          },
+          "404": {
+            "description": "UserNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete an user",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "user id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "security": [
+          {
+            "UserSecurity": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted user",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "UserNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/user/me": {
+      "get": {
+        "description": "Get my identity",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "user obtained",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "500": {
+            "description": "Generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/user/{user}/recover-password": {
+      "post": {
+        "description": "Recover password",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "user id or slug",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user obtained",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "UserNotFound error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Email or generic error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "description": "Error",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "HTTP Status code"
+        },
+        "detail": {
+          "type": "string",
+          "description": "Short detail about the error"
+        }
+      }
+    },
+    "Script": {
+      "type": "object",
+      "description": "Script Model",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "script id"
+        },
+        "name": {
+          "type": "string",
+          "description": "script name"
+        },
+        "slug": {
+          "type": "string",
+          "description": "script slug"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date",
+          "description": "creation date"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "UUID",
+          "description": "user id"
+        },
+        "status": {
+          "type": "string",
+          "description": "script status"
+        },
+        "logs": {
+          "type": "array",
+          "description": "script status",
+          "items": {
+            "$ref": "#/definitions/Log"
+          }
+        },
+        "executions": {
+          "type": "array",
+          "description": "script status",
+          "items": {
+            "$ref": "#/definitions/Execution"
+          }
+        }
+      }
+    },
+    "Scripts": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Script"
+          }
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "description": "User Model",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "UUID",
+          "description": "user id"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "user email"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date",
+          "description": "creation date"
+        },
+        "role": {
+          "type": "string",
+          "description": "user role"
+        },
+        "scripts": {
+          "type": "array",
+          "description": "user scripts",
+          "items": {
+            "$ref": "#/definitions/Script"
+          }
+        }
+      }
+    },
+    "Users": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          }
+        }
+      }
+    },
+    "Log": {
+      "type": "object",
+      "description": "Log Model",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "log id"
+        },
+        "text": {
+          "type": "string",
+          "description": "log information"
+        },
+        "register_date": {
+          "type": "string",
+          "format": "date",
+          "description": "log time"
+        },
+        "script_id": {
+          "type": "string",
+          "format": "UUID",
+          "description": "script id"
+        }
+      }
+    },
+    "Logs": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Log"
+          }
+        }
+      }
+    },
+    "Execution": {
+      "type": "object",
+      "description": "Execution Model",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "execution id"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "start date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "end date"
+        },
+        "status": {
+          "type": "string",
+          "description": "execution status"
+        },
+        "progress": {
+          "type": "integer",
+          "description": "execution progress"
+        },
+        "params": {
+          "type": "object",
+          "description": "params set in the request"
+        },
+        "results": {
+          "type": "object",
+          "description": "script results"
+        },
+        "script": {
+          "type": "string",
+          "format": "UUID",
+          "description": "script id"
+        },
+        "logs": {
+          "type": "array",
+          "description": "script status",
+          "items": {
+            "$ref": "#/definitions/Log"
+          }
+        }
+      }
+    },
+    "Executions": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Execution"
+          }
+        }
+      }
+    }
+  }
+}

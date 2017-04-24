@@ -22,7 +22,9 @@ from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFo
 @jwt_required()
 @validate_file
 def create_script():
-    """Create a script"""
+    """
+    Create a new script
+    """
     logging.info('[ROUTER]: Creating a script')
     sent_file = request.files.get('file')
     if sent_file.filename == '':
