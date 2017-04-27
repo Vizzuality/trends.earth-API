@@ -6,9 +6,10 @@ from __future__ import print_function
 import dateutil.parser
 import logging
 
-from flask import jsonify, request
+from flask import jsonify, request, send_from_directory, Response, json
 from flask_jwt import jwt_required, current_identity
 
+from gefapi.config import SETTINGS
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, \
     validate_file, validate_execution_update, validate_execution_log_creation
@@ -69,6 +70,24 @@ def get_script(script):
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
     return jsonify(data=script.serialize), 200
+
+@endpoints.route('/script/<script>/download', strict_slashes=False, methods=['GET'])
+def download_script(script):
+    """Download a script"""
+    logging.info('[ROUTER]: Download script '+script)
+    try:
+        script = ScriptService.get_script(script)
+        return send_from_directory(directory=SETTINGS.get('SCRIPTS_FS'), filename=script.slug + '.tar.gz')
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except NotAllowed as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=403, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    
 
 
 @endpoints.route('/script/<script>/log', strict_slashes=False, methods=['GET'])
@@ -218,6 +237,21 @@ def get_execution_logs(execution):
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
     return jsonify(data=[log.serialize for log in logs]), 200
+
+
+@endpoints.route('/execution/<execution>/download-results', strict_slashes=False, methods=['GET'])
+def get_download_results(execution):
+    """Download results of the exectuion"""
+    logging.info('[ROUTER]: Download execution results of execution %s ' % (execution))
+    try:
+        execution = ExecutionService.get_execution(execution)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+
+    return Response(json.dumps(execution.results),
+                       mimetype="text/plain",
+                       headers={"Content-Disposition": "attachment;filename=results.json"})
 
 
 @endpoints.route('/execution/<execution>/log', strict_slashes=False, methods=['POST'])

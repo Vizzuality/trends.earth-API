@@ -8,6 +8,7 @@ import os
 import logging
 import tarfile
 import json
+import shutil
 from uuid import UUID
 
 from werkzeug.utils import secure_filename
@@ -80,19 +81,18 @@ class ScriptService(object):
         try:
             logging.info('[DB]: ADD')
             db.session.add(script)
-            db.session.commit()
-        except Exception as error:
-            raise error
-
-        try:
-            os.rename(sent_file_path, os.path.join(SETTINGS.get('UPLOAD_FOLDER'), script.slug+'.tar.gz'))
-            sent_file_path = os.path.join(SETTINGS.get('UPLOAD_FOLDER'), script.slug+'.tar.gz')
+            
+        
+            shutil.move(sent_file_path, os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz'))
+            sent_file_path = os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz')
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug)
+            
+            db.session.commit()
             result = docker_build.delay(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
 
-
         except Exception as error:
+            logging.error(error)
             raise error
         return script
 

@@ -8,7 +8,7 @@ import os
 import json
 import logging
 
-from flask import Flask
+from flask import Flask, request, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS, cross_origin
@@ -53,6 +53,33 @@ from flask_jwt import JWT
 from gefapi.jwt import authenticate, identity
 # JWT
 jwt = JWT(app, authenticate, identity)
+
+@jwt.request_handler
+def request_handler():
+    auth_header_value = request.headers.get('Authorization', None)
+    auth_header_prefix = current_app.config['JWT_AUTH_HEADER_PREFIX']
+
+    if auth_header_value is None and request.args.get('token', None) is not None:
+        logging.info(request.args.get('token', ''))
+        auth_header_value = auth_header_prefix + ' ' + request.args.get('token', '')
+    
+    if auth_header_value is None:
+        return None
+    
+    parts = auth_header_value.split()
+
+    if parts[0].lower() != auth_header_prefix.lower():
+        raise JWTError('Invalid JWT header', 'Unsupported authorization type')
+    elif len(parts) == 1:
+        raise JWTError('Invalid JWT header', 'Token missing')
+    elif len(parts) > 2:
+        raise JWTError('Invalid JWT header', 'Token contains spaces')
+
+    return parts[1]
+
+
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
 
 
 @app.errorhandler(403)
