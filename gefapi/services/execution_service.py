@@ -32,11 +32,11 @@ class ExecutionService(object):
         logging.info('[DB]: QUERY')
         executions = Execution.query.all()
         return executions
-        
+
     @staticmethod
-    def create_execution(script_id, params):
+    def create_execution(script_id, params, user):
         logging.info('[SERVICE]: Creating execution')
-        script = ScriptService.get_script(script_id)
+        script = ScriptService.get_script(script_id, user)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
         if script.status != 'SUCCESS':
