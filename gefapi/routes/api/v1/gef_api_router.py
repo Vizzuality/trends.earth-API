@@ -42,7 +42,7 @@ def create_script():
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200
 
 
 @endpoints.route('/script', strict_slashes=False, methods=['GET'])
@@ -50,12 +50,14 @@ def create_script():
 def get_scripts():
     """Get all scripts"""
     logging.info('[ROUTER]: Getting all scripts')
+    include = request.args.get('include')
+    include = include.split(',') if include else []
     try:
         scripts = ScriptService.get_scripts(current_identity)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[script.serialize for script in scripts]), 200
+    return jsonify(data=[script.serialize(include) for script in scripts]), 200
 
 
 @endpoints.route('/script/<script>', strict_slashes=False, methods=['GET'])
@@ -63,6 +65,8 @@ def get_scripts():
 def get_script(script):
     """Get a script"""
     logging.info('[ROUTER]: Getting script '+script)
+    include = request.args.get('include')
+    include = include.split(',') if include else []
     try:
         script = ScriptService.get_script(script, current_identity)
     except ScriptNotFound as e:
@@ -71,7 +75,7 @@ def get_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=script.serialize), 200
+    return jsonify(data=script.serialize(include)), 200
 
 @endpoints.route('/script/<script>/download', strict_slashes=False, methods=['GET'])
 @jwt_required()
@@ -110,7 +114,7 @@ def get_script_logs(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[log.serialize for log in logs]), 200
+    return jsonify(data=[log.serialize() for log in logs]), 200
 
 
 @endpoints.route('/script/<script>', strict_slashes=False, methods=['PATCH'])
@@ -137,7 +141,7 @@ def update_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=script.serialize), 200
+    return jsonify(data=script.serialize()), 200
 
 
 @endpoints.route('/script/<script>', strict_slashes=False, methods=['DELETE'])
@@ -156,7 +160,7 @@ def delete_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=script.serialize), 200
+    return jsonify(data=script.serialize()), 200
 
 
 # SCRIPT EXECUTION
@@ -175,24 +179,28 @@ def run_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=execution.serialize), 200
+    return jsonify(data=execution.serialize()), 200
 
 
 @endpoints.route('/execution', strict_slashes=False, methods=['GET'])
 def get_executions():
     """Get all executions"""
     logging.info('[ROUTER]: Getting all executions: ')
+    include = request.args.get('include')
+    include = include.split(',') if include else []
     try:
         executions = ExecutionService.get_executions()
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[execution.serialize for execution in executions]), 200
+    return jsonify(data=[execution.serialize(include) for execution in executions]), 200
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
 def get_execution(execution):
     """Get an execution"""
     logging.info('[ROUTER]: Getting execution: '+execution)
+    include = request.args.get('include')
+    include = include.split(',') if include else []
     try:
         execution = ExecutionService.get_execution(execution)
     except ExecutionNotFound as e:
@@ -201,7 +209,7 @@ def get_execution(execution):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=execution.serialize), 200
+    return jsonify(data=execution.serialize(include)), 200
 
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['PATCH'])
@@ -222,7 +230,7 @@ def update_execution(execution):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=execution.serialize), 200
+    return jsonify(data=execution.serialize()), 200
 
 
 @endpoints.route('/execution/<execution>/log', strict_slashes=False, methods=['GET'])
@@ -240,7 +248,7 @@ def get_execution_logs(execution):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[log.serialize for log in logs]), 200
+    return jsonify(data=[log.serialize() for log in logs]), 200
 
 
 @endpoints.route('/execution/<execution>/download-results', strict_slashes=False, methods=['GET'])
@@ -276,7 +284,7 @@ def create_execution_log(execution):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=log.serialize), 200
+    return jsonify(data=log.serialize()), 200
 
 
 # USER
@@ -298,7 +306,7 @@ def create_user():
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200
 
 
 @endpoints.route('/user', strict_slashes=False, methods=['GET'])
@@ -306,12 +314,17 @@ def create_user():
 def get_users():
     """Get users"""
     logging.info('[ROUTER]: Getting all users')
+    include = request.args.get('include')
+    include = include.split(',') if include else []
+    identity = current_identity
+    if identity.role != 'ADMIN':
+        return error(status=403, detail='Forbidden')
     try:
         users = UserService.get_users()
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[user.serialize for user in users]), 200
+    return jsonify(data=[user.serialize(include) for user in users]), 200
 
 
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['GET'])
@@ -319,6 +332,11 @@ def get_users():
 def get_user(user):
     """Get an user"""
     logging.info('[ROUTER]: Getting user'+user)
+    include = request.args.get('include')
+    include = include.split(',') if include else []
+    identity = current_identity
+    if identity.role != 'ADMIN':
+        return error(status=403, detail='Forbidden')
     try:
         user = UserService.get_user(user)
     except UserNotFound as e:
@@ -327,7 +345,7 @@ def get_user(user):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize(include)), 200
 
 
 @endpoints.route('/user/me', strict_slashes=False, methods=['GET'])
@@ -336,7 +354,7 @@ def get_me():
     """Get me"""
     logging.info('[ROUTER]: Getting my user')
     user = current_identity
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200
 
 
 @endpoints.route('/user/<user>/recover-password', strict_slashes=False, methods=['POST'])
@@ -354,7 +372,7 @@ def recover_password(user):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200
 
 
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['PATCH'])
@@ -375,7 +393,7 @@ def update_user(user):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200
 
 
 @endpoints.route('/user/<user>', strict_slashes=False, methods=['DELETE'])
@@ -394,4 +412,4 @@ def delete_user(user):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=user.serialize), 200
+    return jsonify(data=user.serialize()), 200

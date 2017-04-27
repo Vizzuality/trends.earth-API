@@ -4,11 +4,13 @@ import logging
 import re
 
 from gefapi.routes.api.v1 import error
+from gefapi.config import SETTINGS
 
 from functools import wraps
 from flask import request, jsonify
 
 
+ROLES = SETTINGS.get('ROLES')
 EMAIL_REGEX = re.compile(r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$')
 
 
@@ -17,10 +19,15 @@ def validate_user_creation(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         json_data = request.get_json()
-        if 'email' not in json_data or 'password' not in json_data:
-            return error(status=400, detail='Email and password are required')
-        if not EMAIL_REGEX.match(json_data.get('email', None)):
-            return error(status=400, detail='Email not valid')
+        if 'email' not in json_data:
+            return error(status=400, detail='Email is required')
+        else:
+            if not EMAIL_REGEX.match(json_data.get('email')):
+                return error(status=400, detail='Email not valid')
+        if 'role' in json_data:
+            role = json_data.get('role')
+            if role not in ROLES:
+                return error(status=400, detail='role not valid')
         return func(*args, **kwargs)
     return wrapper
 
@@ -30,8 +37,10 @@ def validate_user_update(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         json_data = request.get_json()
-        if 'password' not in json_data and 'role' not in json_data:
-            return error(status=400, detail='Password or role are required')
+        if 'role' in json_data:
+            role = json_data.get('role')
+            if role not in ROLES:
+                return error(status=400, detail='role not valid')
         return func(*args, **kwargs)
     return wrapper
 

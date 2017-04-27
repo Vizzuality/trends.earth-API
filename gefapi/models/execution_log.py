@@ -29,7 +29,6 @@ class ExecutionLog(db.Model):
     def __repr__(self):
         return '<ExecutionLog %r>' % self.id
 
-    @property
     def serialize(self):
         """Return object data in easily serializeable format"""
         return {

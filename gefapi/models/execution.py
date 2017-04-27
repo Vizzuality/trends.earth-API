@@ -32,13 +32,13 @@ class Execution(db.Model):
     def __repr__(self):
         return '<Execution %r>' % self.id
 
-    @property
-    def serialize(self):
+    def serialize(self, include=None):
         """Return object data in easily serializeable format"""
+        include = include if include else []
         end_date_formatted = None
         if self.end_date:
             end_date_formatted = self.end_date.isoformat()
-        return {
+        execution = {
             'id': self.id,
             'script_id': self.script_id,
             'start_date': self.start_date.isoformat(),
@@ -47,10 +47,12 @@ class Execution(db.Model):
             'progress': self.progress,
             'params': self.params,
             'results': self.results,
-            'logs': self.serialize_logs
         }
+        if 'logs' in include:
+            execution['logs'] = self.serialize_logs
+        return execution
 
     @property
     def serialize_logs(self):
         """Serialize Logs"""
-        return [item.serialize for item in self.logs]
+        return [item.serialize() for item in self.logs]
