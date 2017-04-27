@@ -12,7 +12,8 @@ from flask_jwt import jwt_required, current_identity
 from gefapi.config import SETTINGS
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, \
-    validate_file, validate_execution_update, validate_execution_log_creation
+    validate_file, validate_execution_update, validate_execution_log_creation, \
+    validate_profile_update
 from gefapi.services import UserService, ScriptService, ExecutionService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, \
     ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid, EmailError
@@ -94,7 +95,6 @@ def download_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    
 
 
 @endpoints.route('/script/<script>/log', strict_slashes=False, methods=['GET'])
@@ -354,6 +354,25 @@ def get_me():
     """Get me"""
     logging.info('[ROUTER]: Getting my user')
     user = current_identity
+    return jsonify(data=user.serialize()), 200
+
+
+@endpoints.route('/user/me', strict_slashes=False, methods=['PATCH'])
+@jwt_required()
+@validate_profile_update
+def update_profile():
+    """Update an user"""
+    logging.info('[ROUTER]: Updating profile profile')
+    body = request.get_json()
+    identity = current_identity
+    try:
+        user = UserService.update_profile_password(body, identity)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
     return jsonify(data=user.serialize()), 200
 
 

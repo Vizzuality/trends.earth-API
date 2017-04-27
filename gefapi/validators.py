@@ -45,6 +45,21 @@ def validate_user_update(func):
     return wrapper
 
 
+def validate_profile_update(func):
+    """User Update Validation"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        json_data = request.get_json()
+        if 'password' not in json_data or 'repeatPassword' not in json_data:
+            return error(status=400, detail='not updated')
+        password = json_data.get('password')
+        repeat_password = json_data.get('repeatPassword')
+        if password != repeat_password:
+            return error(status=400, detail='not updated')
+        return func(*args, **kwargs)
+    return wrapper
+
+
 def validate_file(func):
     """Script File Validation"""
     @wraps(func)
