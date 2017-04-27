@@ -46,11 +46,12 @@ def create_script():
 
 
 @endpoints.route('/script', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_scripts():
     """Get all scripts"""
     logging.info('[ROUTER]: Getting all scripts')
     try:
-        scripts = ScriptService.get_scripts()
+        scripts = ScriptService.get_scripts(current_identity)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
@@ -58,11 +59,12 @@ def get_scripts():
 
 
 @endpoints.route('/script/<script>', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_script(script):
     """Get a script"""
     logging.info('[ROUTER]: Getting script '+script)
     try:
-        script = ScriptService.get_script(script)
+        script = ScriptService.get_script(script, current_identity)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
@@ -72,11 +74,12 @@ def get_script(script):
     return jsonify(data=script.serialize), 200
 
 @endpoints.route('/script/<script>/download', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def download_script(script):
     """Download a script"""
     logging.info('[ROUTER]: Download script '+script)
     try:
-        script = ScriptService.get_script(script)
+        script = ScriptService.get_script(script, current_identity)
         return send_from_directory(directory=SETTINGS.get('SCRIPTS_FS'), filename=script.slug + '.tar.gz')
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
@@ -91,6 +94,7 @@ def download_script(script):
 
 
 @endpoints.route('/script/<script>/log', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_script_logs(script):
     """Get a script logs"""
     logging.info('[ROUTER]: Getting script logs of script %s ' % (script))

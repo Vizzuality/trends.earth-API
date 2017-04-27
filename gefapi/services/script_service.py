@@ -97,23 +97,36 @@ class ScriptService(object):
         return script
 
     @staticmethod
-    def get_scripts():
+    def get_scripts(user):
         logging.info('[SERVICE]: Getting scripts')
         logging.info('[DB]: QUERY')
-        scripts = Script.query.all()
-        return scripts
+        if user.role == 'ADMIN':
+            scripts = Script.query.all()
+            return scripts
+        else:
+            scripts = Script.query.filter_by(user_id=user.id)
+            return scripts
 
     @staticmethod
-    def get_script(script_id):
+    def get_script(script_id, user):
         logging.info('[SERVICE]: Getting script: '+script_id)
         logging.info('[DB]: QUERY')
-        try:
-            val = UUID(script_id, version=4)
-            script = Script.query.get(script_id)
-        except ValueError:
-            script = Script.query.filter_by(slug=script_id).first()
-        except Exception as error:
-            raise error
+        if user.role == 'ADMIN':
+            try:
+                val = UUID(script_id, version=4)
+                script = Script.query.get(script_id)
+            except ValueError:
+                script = Script.query.filter_by(slug=script_id).first()
+            except Exception as error:
+                raise error
+        else:
+            try:
+                val = UUID(script_id, version=4)
+                script = Script.query.filter_by(id=script_id, user_id=user.id).first()
+            except ValueError:
+                script = Script.query.filter_by(slug=script_id, user_id=user.id).first()
+            except Exception as error:
+                raise error
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
         return script
