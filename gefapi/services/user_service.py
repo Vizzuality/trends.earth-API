@@ -13,8 +13,9 @@ from gefapi import db
 from gefapi.models import User
 from gefapi.errors import UserNotFound, UserDuplicated, AuthError, EmailError
 from gefapi.services import EmailService
+from gefapi.config import SETTINGS
 
-ROLES = ['ADMIN', 'MANAGER', 'USER']
+ROLES = SETTINGS.get('ROLES')
 
 
 class UserService(object):
@@ -24,7 +25,7 @@ class UserService(object):
     def create_user(user):
         logging.info('[SERVICE]: Creating user')
         email = user.get('email', None)
-        password = user.get('password', None)
+        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
         role = user.get('role', 'USER')
         if role not in ROLES:
             role = 'USER'
@@ -38,6 +39,14 @@ class UserService(object):
             logging.info('[DB]: ADD')
             db.session.add(user)
             db.session.commit()
+            try:
+                email = EmailService.send_html_email(
+                    recipients=[user.email],
+                    html='<p>Password: '+password+'</p>',
+                    subject='[GEF] User created'
+                )
+            except EmailError as error:
+                raise error
         except Exception as error:
             raise error
         return user
@@ -92,22 +101,19 @@ class UserService(object):
     @staticmethod
     def update_user(user, user_id):
         logging.info('[SERVICE]: Updating user')
-        password = user.get('password', None)
-        role = user.get('role', None)
-        if password is None and role is None:
-            raise Exception
-        user = UserService.get_user(user_id=user_id)
-        if not user:
+        current_user = UserService.get_user(user_id=user_id)
+        if not current_user:
             raise UserNotFound(message='User with id '+user_id+' does not exist')
-        user.password = password or user.password
-        user.role = role or user.role
+        if 'role' in user:
+            role = user.get('role') if user.get('role') in ROLES else current_user.role
+            current_user.role = role
         try:
             logging.info('[DB]: ADD')
-            db.session.add(user)
+            db.session.add(current_user)
             db.session.commit()
         except Exception as error:
             raise error
-        return user
+        return current_user
 
     @staticmethod
     def delete_user(user_id):

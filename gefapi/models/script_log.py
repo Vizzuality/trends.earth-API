@@ -27,7 +27,6 @@ class ScriptLog(db.Model):
     def __repr__(self):
         return '<ScriptLog %r>' % self.id
 
-    @property
     def serialize(self):
         """Return object data in easily serializeable format"""
         return {

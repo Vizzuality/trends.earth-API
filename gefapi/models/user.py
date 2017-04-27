@@ -32,21 +32,23 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.email
 
-    @property
-    def serialize(self):
+    def serialize(self, include=None):
         """Return object data in easily serializeable format"""
-        return {
+        include = include if include else []
+        user = {
             'id': self.id,
             'email': self.email,
             'created_at': self.created_at,
             'role': self.role,
-            'scripts': self.serialize_scripts
         }
+        if 'scripts' in include:
+            user['scripts'] = self.serialize_scripts
+        return user
 
     @property
     def serialize_scripts(self):
         """Serialize Scripts"""
-        return [item.serialize for item in self.scripts]
+        return [item.serialize() for item in self.scripts]
 
     def set_password(self, password):
         return generate_password_hash(password)

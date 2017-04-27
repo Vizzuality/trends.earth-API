@@ -17,6 +17,7 @@ class Script(db.Model):
     id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     name = db.Column(db.String(120), nullable=False)
     slug = db.Column(db.String(80), unique=True, nullable=False)
+    description = db.Column(db.Text(), default='')
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
     status = db.Column(db.String(80), nullable=False, default='PENDING')
@@ -31,26 +32,30 @@ class Script(db.Model):
     def __repr__(self):
         return '<Script %r>' % self.name
 
-    @property
-    def serialize(self):
+    def serialize(self, include=None):
         """Return object data in easily serializeable format"""
-        return {
+        include = include if include else []
+        script = {
             'id': self.id,
             'name': self.name,
             'slug': self.slug,
+            'description': self.description,
             'created_at': self.created_at.isoformat(),
             'user_id': self.user_id,
             'status': self.status,
-            'logs': self.serialize_logs,
-            'executions': self.serialize_executions
         }
+        if 'logs' in include:
+            script['logs'] = self.serialize_logs
+        if 'executions' in include:
+            script['executions'] = self.serialize_executions
+        return script
 
     @property
     def serialize_logs(self):
         """Serialize Logs"""
-        return [item.serialize for item in self.logs]
+        return [item.serialize() for item in self.logs]
 
     @property
     def serialize_executions(self):
         """Serialize Logs"""
-        return [item.serialize for item in self.executions]
+        return [item.serialize() for item in self.executions]
