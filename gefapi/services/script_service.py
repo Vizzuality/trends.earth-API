@@ -154,10 +154,10 @@ class ScriptService(object):
 
     def update_script(script_id, sent_file, user):
         logging.info('[SERVICE]: Updating script')
-        script = ScriptService.get_script(script_id)
+        script = ScriptService.get_script(script_id, user)
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
-        if user.id != script.user_id:
+        if user.id != script.user_id and user.role != 'ADMIN':
             raise NotAllowed(message='Operation not allowed to this user')
         return ScriptService.create_script(sent_file, user, script)
 
