@@ -50,6 +50,8 @@ class Execution(db.Model):
         }
         if 'logs' in include:
             execution['logs'] = self.serialize_logs
+        if 'script' in include:
+            execution['script'] = self.script.serialize()
         return execution
 
     @property

@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
+import logging
 import datetime
 import uuid
 
@@ -46,6 +46,8 @@ class Script(db.Model):
         }
         if 'logs' in include:
             script['logs'] = self.serialize_logs
+        if 'user' in include:
+            script['user'] = self.user.serialize()
         if 'executions' in include:
             script['executions'] = self.serialize_executions
         return script
