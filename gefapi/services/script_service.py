@@ -81,13 +81,13 @@ class ScriptService(object):
         try:
             logging.info('[DB]: ADD')
             db.session.add(script)
-            
-        
+
+
             shutil.move(sent_file_path, os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz'))
             sent_file_path = os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz')
             with tarfile.open(name=sent_file_path, mode='r:gz') as tar:
                 tar.extractall(path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug)
-            
+
             db.session.commit()
             result = docker_build.delay(script.id, path=SETTINGS.get('SCRIPTS_FS') + '/'+script.slug, tag_image=script.slug)
 
@@ -154,9 +154,15 @@ class ScriptService(object):
 
     def update_script(script_id, sent_file, user):
         logging.info('[SERVICE]: Updating script')
-        script = ScriptService.get_script(script_id)
+        try:
+            script = Script.query.get(script_id)
+        except ValueError:
+            script = Script.query.filter_by(slug=script_id).first()
+        except Exception as error:
+            raise error
         if not script:
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+
         if user.id != script.user_id:
             raise NotAllowed(message='Operation not allowed to this user')
         return ScriptService.create_script(sent_file, user, script)
@@ -164,9 +170,15 @@ class ScriptService(object):
     @staticmethod
     def delete_script(script_id):
         logging.info('[SERVICE]: Deleting script'+script_id)
-        script = ScriptService.get_script(script_id=script_id)
+        try:
+            script = Script.query.get(script_id)
+        except ValueError:
+            script = Script.query.filter_by(slug=script_id).first()
+        except Exception as error:
+            raise error
         if not script:
-            raise ScriptNotFound(message='Script with script_id '+script_id+' does not exist')
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+
         try:
             logging.info('[DB]: DELETE')
             db.session.delete(script)
