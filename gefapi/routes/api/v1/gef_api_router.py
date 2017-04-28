@@ -12,7 +12,8 @@ from flask_jwt import jwt_required, current_identity
 from gefapi.config import SETTINGS
 from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, \
-    validate_file, validate_execution_update, validate_execution_log_creation
+    validate_file, validate_execution_update, validate_execution_log_creation, \
+    validate_profile_update
 from gefapi.services import UserService, ScriptService, ExecutionService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, \
     ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid, EmailError
@@ -77,6 +78,7 @@ def get_script(script):
         return error(status=500, detail='Generic Error')
     return jsonify(data=script.serialize(include)), 200
 
+
 @endpoints.route('/script/<script>/download', strict_slashes=False, methods=['GET'])
 @jwt_required()
 def download_script(script):
@@ -94,7 +96,6 @@ def download_script(script):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    
 
 
 @endpoints.route('/script/<script>/log', strict_slashes=False, methods=['GET'])
@@ -127,6 +128,8 @@ def update_script(script):
     if sent_file.filename == '':
         sent_file.filename = 'script'
     user = current_identity
+    if user.role != 'ADMIN' and user.email != 'gef@gef.com':
+        return error(status=403, detail='Forbidden')
     try:
         script = ScriptService.update_script(script, sent_file, user)
     except InvalidFile as e:
@@ -150,10 +153,10 @@ def delete_script(script):
     """Delete a script"""
     logging.info('[ROUTER]: Deleting script: '+script)
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
-        script = ScriptService.delete_script(script)
+        script = ScriptService.delete_script(script, identity)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
@@ -165,11 +168,13 @@ def delete_script(script):
 
 # SCRIPT EXECUTION
 @endpoints.route('/script/<script>/run', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def run_script(script):
     """Run a script"""
     logging.info('[ROUTER]: Running script: '+script)
+    user = current_identity
     try:
-        execution = ExecutionService.create_execution(script, request.args.to_dict())
+        execution = ExecutionService.create_execution(script, request.args.to_dict(), user)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
@@ -194,6 +199,7 @@ def get_executions():
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
     return jsonify(data=[execution.serialize(include) for execution in executions]), 200
+
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
 def get_execution(execution):
@@ -220,7 +226,7 @@ def update_execution(execution):
     logging.info('[ROUTER]: Updating execution '+execution)
     body = request.get_json()
     user = current_identity
-    if user.role != 'ADMIN' or user.email != 'gef@gef.com':
+    if user.role != 'ADMIN' and user.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         execution = ExecutionService.update_execution(body, execution)
@@ -261,9 +267,11 @@ def get_download_results(execution):
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
 
-    return Response(json.dumps(execution.results),
-                       mimetype="text/plain",
-                       headers={"Content-Disposition": "attachment;filename=results.json"})
+    return Response(
+        json.dumps(execution.results),
+        mimetype="text/plain",
+        headers={"Content-Disposition": "attachment;filename=results.json"}
+    )
 
 
 @endpoints.route('/execution/<execution>/log', strict_slashes=False, methods=['POST'])
@@ -274,7 +282,7 @@ def create_execution_log(execution):
     logging.info('[ROUTER]: Creating execution log for '+execution)
     body = request.get_json()
     user = current_identity
-    if user.role != 'ADMIN' or user.email != 'gef@gef.com':
+    if user.role != 'ADMIN' and user.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         log = ExecutionService.create_execution_log(body, execution)
@@ -296,7 +304,7 @@ def create_user():
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
@@ -317,7 +325,7 @@ def get_users():
     include = request.args.get('include')
     include = include.split(',') if include else []
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         users = UserService.get_users()
@@ -335,7 +343,7 @@ def get_user(user):
     include = request.args.get('include')
     include = include.split(',') if include else []
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.get_user(user)
@@ -354,6 +362,25 @@ def get_me():
     """Get me"""
     logging.info('[ROUTER]: Getting my user')
     user = current_identity
+    return jsonify(data=user.serialize()), 200
+
+
+@endpoints.route('/user/me', strict_slashes=False, methods=['PATCH'])
+@jwt_required()
+@validate_profile_update
+def update_profile():
+    """Update an user"""
+    logging.info('[ROUTER]: Updating profile profile')
+    body = request.get_json()
+    identity = current_identity
+    try:
+        user = UserService.update_profile_password(body, identity)
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
     return jsonify(data=user.serialize()), 200
 
 
@@ -383,7 +410,7 @@ def update_user(user):
     logging.info('[ROUTER]: Updating user'+user)
     body = request.get_json()
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.update_user(body, user)
@@ -402,7 +429,7 @@ def delete_user(user):
     """Delete an user"""
     logging.info('[ROUTER]: Deleting user'+user)
     identity = current_identity
-    if identity.role != 'ADMIN':
+    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.delete_user(user)

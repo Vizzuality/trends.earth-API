@@ -99,6 +99,19 @@ class UserService(object):
         return user
 
     @staticmethod
+    def update_profile_password(user, current_user):
+        logging.info('[SERVICE]: Updating user password')
+        password = user.get('password')
+        current_user.password = current_user.set_password(password=password)
+        try:
+            logging.info('[DB]: ADD')
+            db.session.add(current_user)
+            db.session.commit()
+        except Exception as error:
+            raise error
+        return current_user
+
+    @staticmethod
     def update_user(user, user_id):
         logging.info('[SERVICE]: Updating user')
         current_user = UserService.get_user(user_id=user_id)

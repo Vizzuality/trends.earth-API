@@ -54,6 +54,7 @@ from gefapi.jwt import authenticate, identity
 # JWT
 jwt = JWT(app, authenticate, identity)
 
+
 @jwt.request_handler
 def request_handler():
     auth_header_value = request.headers.get('Authorization', None)
@@ -62,10 +63,10 @@ def request_handler():
     if auth_header_value is None and request.args.get('token', None) is not None:
         logging.info(request.args.get('token', ''))
         auth_header_value = auth_header_prefix + ' ' + request.args.get('token', '')
-    
+
     if auth_header_value is None:
         return None
-    
+
     parts = auth_header_value.split()
 
     if parts[0].lower() != auth_header_prefix.lower():
@@ -76,10 +77,6 @@ def request_handler():
         raise JWTError('Invalid JWT header', 'Token contains spaces')
 
     return parts[1]
-
-
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
 
 
 @app.errorhandler(403)
