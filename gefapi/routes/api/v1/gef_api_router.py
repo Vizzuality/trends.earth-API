@@ -174,7 +174,9 @@ def run_script(script):
     logging.info('[ROUTER]: Running script: '+script)
     user = current_identity
     try:
-        execution = ExecutionService.create_execution(script, request.args.to_dict(), user)
+        params = request.get_json()
+        del params['token']
+        execution = ExecutionService.create_execution(script, params, user)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
@@ -297,15 +299,14 @@ def create_execution_log(execution):
 
 # USER
 @endpoints.route('/user', strict_slashes=False, methods=['POST'])
-@jwt_required()
 @validate_user_creation
 def create_user():
     """Create an user"""
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
-    identity = current_identity
-    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
-        return error(status=403, detail='Forbidden')
+    # identity = current_identity
+    # if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
+    #     return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
     except UserDuplicated as e:
