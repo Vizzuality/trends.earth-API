@@ -174,8 +174,9 @@ def run_script(script):
     logging.info('[ROUTER]: Running script: '+script)
     user = current_identity
     try:
-        params = request.get_json()
-        del params['token']
+        params = request.args.to_dict()
+        if 'token' in params:
+            del params['token']
         execution = ExecutionService.create_execution(script, params, user)
     except ScriptNotFound as e:
         logging.error('[ROUTER]: '+e.message)
