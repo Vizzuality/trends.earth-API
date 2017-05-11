@@ -119,7 +119,7 @@ class ExecutionService(object):
         return execution_log
 
     @staticmethod
-    def get_execution_logs(execution_id, start_date):
+    def get_execution_logs(execution_id, start_date, last_id):
         logging.info('[SERVICE]: Getting execution logs of execution %s: ' % (execution_id))
         logging.info('[DB]: QUERY')
         try:
@@ -132,5 +132,7 @@ class ExecutionService(object):
         if start_date:
             logging.debug(start_date)
             return ExecutionLog.query.filter(ExecutionLog.execution_id == execution.id, ExecutionLog.register_date > start_date).order_by(ExecutionLog.register_date).all()
+        elif last_id:
+            return ExecutionLog.query.filter(ExecutionLog.execution_id == execution.id, ExecutionLog.id > last_id).order_by(ExecutionLog.register_date).all()
         else:
             return execution.logs

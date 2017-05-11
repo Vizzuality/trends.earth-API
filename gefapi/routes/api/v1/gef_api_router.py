@@ -250,7 +250,8 @@ def get_execution_logs(execution):
         start = request.args.get('start', None)
         if start:
             start = dateutil.parser.parse(start)
-        logs = ExecutionService.get_execution_logs(execution, start)
+        last_id = request.args.get('last-id', None)
+        logs = ExecutionService.get_execution_logs(execution, start, last_id)
     except ExecutionNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)
