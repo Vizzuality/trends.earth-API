@@ -64,10 +64,11 @@ class ExecutionService(object):
         return execution
 
     @staticmethod
-    def get_execution(execution_id, user):
+    def get_execution(execution_id, user='fromservice'):
         logging.info('[SERVICE]: Getting execution '+execution_id)
         logging.info('[DB]: QUERY')
-        if user.role == 'ADMIN':
+        # user = 'from service' just in case the requests comes from the service
+        if user == 'fromservice' or user.role == 'ADMIN':
             try:
                 val = UUID(execution_id, version=4)
                 execution = Execution.query.filter_by(id=execution_id).first()
