@@ -33,6 +33,10 @@ def docker_build(script_id, path, tag_image):
     db.session.commit()
     logging.debug('Building...')
     correct, log = DockerService.build(script_id=script_id, path=path, tag_image=tag_image)
+    try:
+        docker_client.remove(image=tag_image)
+    except Exception:
+        logging.info('Error removing the image')
     logging.debug('Changing status')
     script = Script.query.get(script_id)
     if correct:
