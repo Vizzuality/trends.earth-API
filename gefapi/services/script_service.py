@@ -13,6 +13,7 @@ from uuid import UUID
 
 from werkzeug.utils import secure_filename
 from slugify import slugify
+from sqlalchemy import or_
 
 from gefapi.services import docker_build
 from gefapi import db
@@ -104,7 +105,8 @@ class ScriptService(object):
             scripts = Script.query.all()
             return scripts
         else:
-            scripts = Script.query.filter_by(user_id=user.id)
+            scripts = db.session.query(Script) \
+                .filter(or_(Script.user_id == user.id, Script.public == True))
             return scripts
 
     @staticmethod
@@ -114,7 +116,7 @@ class ScriptService(object):
         if user.role == 'ADMIN':
             try:
                 val = UUID(script_id, version=4)
-                script = Script.query.get(script_id)
+                script = Script.query.filter_by(id=script_id).first()
             except ValueError:
                 script = Script.query.filter_by(slug=script_id).first()
             except Exception as error:
@@ -122,9 +124,15 @@ class ScriptService(object):
         else:
             try:
                 val = UUID(script_id, version=4)
-                script = Script.query.filter_by(id=script_id, user_id=user.id).first()
+                script = db.session.query(Script) \
+                    .filter(Script.id == script_id) \
+                    .filter(or_(Script.user_id == user.id, Script.public == True)) \
+                    .first()
             except ValueError:
-                script = Script.query.filter_by(slug=script_id, user_id=user.id).first()
+                script = db.session.query(Script) \
+                    .filter(Script.slug == script_id) \
+                    .filter(or_(Script.user_id == user.id, Script.public == True)) \
+                    .first()
             except Exception as error:
                 raise error
         if not script:
@@ -152,6 +160,7 @@ class ScriptService(object):
         else:
             return script.logs
 
+    @staticmethod
     def update_script(script_id, sent_file, user):
         logging.info('[SERVICE]: Updating script')
         script = ScriptService.get_script(script_id, user)
@@ -174,6 +183,76 @@ class ScriptService(object):
         try:
             logging.info('[DB]: DELETE')
             db.session.delete(script)
+            db.session.commit()
+        except Exception as error:
+            raise error
+        return script
+
+    @staticmethod
+    def publish_script(script_id, user):
+        logging.info('[SERVICE]: Publishing script: '+script_id)
+        if user.role == 'ADMIN':
+            try:
+                val = UUID(script_id, version=4)
+                script = Script.query.filter_by(id=script_id).first()
+            except ValueError:
+                script = Script.query.filter_by(slug=script_id).first()
+            except Exception as error:
+                raise error
+        else:
+            try:
+                val = UUID(script_id, version=4)
+                script = db.session.query(Script) \
+                    .filter(Script.id == script_id) \
+                    .filter(Script.user_id == user.id) \
+                    .first()
+            except ValueError:
+                script = db.session.query(Script) \
+                    .filter(Script.slug == script_id) \
+                    .filter(Script.user_id == user.id) \
+                    .first()
+            except Exception as error:
+                raise error
+        if not script:
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        script.public = True
+        try:
+            logging.info('[DB]: SAVE')
+            db.session.add(script)
+            db.session.commit()
+        except Exception as error:
+            raise error
+        return script
+
+    @staticmethod
+    def unpublish_script(script_id, user):
+        logging.info('[SERVICE]: Unpublishing script: '+script_id)
+        if user.role == 'ADMIN':
+            try:
+                val = UUID(script_id, version=4)
+                script = Script.query.filter_by(id=script_id).first()
+            except ValueError:
+                script = Script.query.filter_by(slug=script_id).first()
+            except Exception as error:
+                raise error
+        else:
+            try:
+                val = UUID(script_id, version=4)
+                script = db.session.query(Script) \
+                    .filter(Script.id == script_id) \
+                    .filter(Script.user_id == user.id) \
+                    .first()
+            except ValueError:
+                script = db.session.query(Script) \
+                    .filter(Script.slug == script_id) \
+                    .filter(Script.user_id == user.id) \
+                    .first()
+        if not script:
+            raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
+        script.public = False
+        try:
+            logging.info('[DB]: SAVE')
+            db.session.add(script)
             db.session.commit()
         except Exception as error:
             raise error

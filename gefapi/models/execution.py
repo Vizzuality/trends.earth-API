@@ -24,6 +24,7 @@ class Execution(db.Model):
     results = db.Column(JSONB, default={})
     logs = db.relationship('ExecutionLog', backref='execution', lazy='dynamic')
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
+    user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
 
     def __init__(self, script_id, params):
         self.script_id = script_id
@@ -41,6 +42,7 @@ class Execution(db.Model):
         execution = {
             'id': self.id,
             'script_id': self.script_id,
+            'user_id': self.user_id,
             'start_date': self.start_date.isoformat(),
             'end_date': end_date_formatted,
             'status': self.status,

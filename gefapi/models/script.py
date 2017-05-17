@@ -23,6 +23,7 @@ class Script(db.Model):
     status = db.Column(db.String(80), nullable=False, default='PENDING')
     logs = db.relationship('ScriptLog', backref='script', lazy='dynamic')
     executions = db.relationship('Execution', backref='script', lazy='dynamic')
+    public = db.Column(db.Boolean(), default=False, nullable=False)
 
     def __init__(self, name, slug, user_id):
         self.name = name
@@ -43,6 +44,7 @@ class Script(db.Model):
             'created_at': self.created_at.isoformat(),
             'user_id': self.user_id,
             'status': self.status,
+            'public': self.public or False
         }
         if 'logs' in include:
             script['logs'] = self.serialize_logs

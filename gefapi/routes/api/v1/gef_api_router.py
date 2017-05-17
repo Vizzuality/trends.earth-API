@@ -79,6 +79,38 @@ def get_script(script):
     return jsonify(data=script.serialize(include)), 200
 
 
+@endpoints.route('/script/<script>/publish', strict_slashes=False, methods=['POST'])
+@jwt_required()
+def publish_script(script):
+    """Publish a script"""
+    logging.info('[ROUTER]: Publishsing script '+script)
+    try:
+        script = ScriptService.publish_script(script, current_identity)
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=script.serialize()), 200
+
+
+@endpoints.route('/script/<script>/unpublish', strict_slashes=False, methods=['POST'])
+@jwt_required()
+def unpublish_script(script):
+    """Unpublish a script"""
+    logging.info('[ROUTER]: Unpublishsing script '+script)
+    try:
+        script = ScriptService.unpublish_script(script, current_identity)
+    except ScriptNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=script.serialize()), 200
+
+
 @endpoints.route('/script/<script>/download', strict_slashes=False, methods=['GET'])
 @jwt_required()
 def download_script(script):
