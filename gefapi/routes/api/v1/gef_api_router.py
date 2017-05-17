@@ -223,13 +223,14 @@ def run_script(script):
 
 
 @endpoints.route('/execution', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_executions():
     """Get all executions"""
     logging.info('[ROUTER]: Getting all executions: ')
     include = request.args.get('include')
     include = include.split(',') if include else []
     try:
-        executions = ExecutionService.get_executions()
+        executions = ExecutionService.get_executions(current_identity)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
@@ -237,13 +238,14 @@ def get_executions():
 
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
+@jwt_required()
 def get_execution(execution):
     """Get an execution"""
     logging.info('[ROUTER]: Getting execution: '+execution)
     include = request.args.get('include')
     include = include.split(',') if include else []
     try:
-        execution = ExecutionService.get_execution(execution)
+        execution = ExecutionService.get_execution(execution, current_identity)
     except ExecutionNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)

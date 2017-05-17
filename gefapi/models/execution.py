@@ -26,9 +26,10 @@ class Execution(db.Model):
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
 
-    def __init__(self, script_id, params):
+    def __init__(self, script_id, params, user_id):
         self.script_id = script_id
         self.params = params
+        self.user_id = user_id
 
     def __repr__(self):
         return '<Execution %r>' % self.id
@@ -52,6 +53,8 @@ class Execution(db.Model):
         }
         if 'logs' in include:
             execution['logs'] = self.serialize_logs
+        if 'user' in include:
+            execution['user'] = self.user.serialize()
         if 'script' in include:
             execution['script'] = self.script.serialize()
         return execution

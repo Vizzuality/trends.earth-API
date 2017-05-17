@@ -27,11 +27,16 @@ class ExecutionService(object):
 
 
     @staticmethod
-    def get_executions():
+    def get_executions(user):
         logging.info('[SERVICE]: Getting executions')
         logging.info('[DB]: QUERY')
-        executions = Execution.query.all()
-        return executions
+        if user.role == 'ADMIN':
+            executions = Execution.query.all()
+            return executions
+        else:
+            executions = db.session.query(Execution) \
+                .filter(Execution.user_id == user.id)
+            return executions
 
     @staticmethod
     def create_execution(script_id, params, user):
@@ -41,7 +46,7 @@ class ExecutionService(object):
             raise ScriptNotFound(message='Script with id '+script_id+' does not exist')
         if script.status != 'SUCCESS':
             raise ScriptStateNotValid(message='Script with id '+script_id+' is not BUILT')
-        execution = Execution(script_id=script.id, params=params)
+        execution = Execution(script_id=script.id, params=params, user_id=user.id)
         try:
             logging.info('[DB]: ADD')
             db.session.add(execution)
@@ -59,14 +64,24 @@ class ExecutionService(object):
         return execution
 
     @staticmethod
-    def get_execution(execution_id):
+    def get_execution(execution_id, user):
         logging.info('[SERVICE]: Getting execution '+execution_id)
         logging.info('[DB]: QUERY')
-        try:
-            val = UUID(execution_id, version=4)
-            execution = Execution.query.get(execution_id)
-        except Exception as error:
-            raise error
+        if user.role == 'ADMIN':
+            try:
+                val = UUID(execution_id, version=4)
+                execution = Execution.query.filter_by(id=execution_id).first()
+            except Exception as error:
+                raise error
+        else:
+            try:
+                val = UUID(execution_id, version=4)
+                execution = db.session.query(Execution) \
+                    .filter(Execution.id == execution_id) \
+                    .filter(Execution.user_id == user.id) \
+                    .first()
+            except Exception as error:
+                raise error
         if not execution:
             raise ExecutionNotFound(message='Ticket Not Found')
         return execution
