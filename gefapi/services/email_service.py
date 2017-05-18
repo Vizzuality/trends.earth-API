@@ -14,7 +14,7 @@ class EmailService(object):
     """MailService Class"""
 
     @staticmethod
-    def send_html_email(recipients=[], html='', from_email='test@sparkpostbox.com', subject='[GEF] Undefined Subject'):
+    def send_html_email(recipients=[], html='', from_email='ldmp-api@resilienceatlas.org', subject='[GEF] Undefined Subject'):
         try:
             sp = SparkPost()
             response = sp.transmissions.send(
@@ -26,4 +26,5 @@ class EmailService(object):
             )
             return response
         except Exception as error:
-            raise EmailError(message=str(error))
+            logging.error(error)
+            raise EmailError(message=error)

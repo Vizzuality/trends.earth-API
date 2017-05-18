@@ -45,7 +45,7 @@ class UserService(object):
             try:
                 email = EmailService.send_html_email(
                     recipients=[user.email],
-                    html='<p>Password: '+password+'</p>',
+                    html='<p>User: ' + user.email + '</p><p>Password: ' + user.password + '</p>',
                     subject='[GEF] User created'
                 )
             except EmailError as error:
@@ -92,7 +92,7 @@ class UserService(object):
             try:
                 email = EmailService.send_html_email(
                     recipients=[user.email],
-                    html='<p>'+password+'</p>',
+                    html='<p>User: ' + user.email + '</p><p>Password: ' + user.password + '</p>',
                     subject='[GEF] Recover password'
                 )
             except EmailError as error:
