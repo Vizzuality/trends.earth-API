@@ -21,8 +21,7 @@ class EmailService(object):
                 recipients=recipients,
                 html=html,
                 from_email=from_email,
-                subject=subject,
-                use_sandbox=True
+                subject=subject
             )
             return response
         except Exception as error:
