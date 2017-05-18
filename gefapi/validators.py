@@ -24,6 +24,8 @@ def validate_user_creation(func):
         else:
             if not EMAIL_REGEX.match(json_data.get('email')):
                 return error(status=400, detail='Email not valid')
+        if 'name' not in json_data:
+            return error(status=400, detail='Name is required')
         if 'role' in json_data:
             role = json_data.get('role')
             if role not in ROLES:

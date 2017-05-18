@@ -19,16 +19,22 @@ class User(db.Model):
     """User Model"""
     id = db.Column(db.GUID(), default=uuid.uuid4, primary_key=True, autoincrement=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    country = db.Column(db.String(120))
+    institution = db.Column(db.String(120))
     password = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     role = db.Column(db.String(10))
     scripts = db.relationship('Script', backref='user', lazy='dynamic')
     executions = db.relationship('Execution', backref='user', lazy='dynamic')
 
-    def __init__(self, email, password, role='USER'):
+    def __init__(self, email, password, name, country, institution, role='USER'):
         self.email = email
         self.password = self.set_password(password=password)
         self.role = role
+        self.name = name
+        self.country = country
+        self.institution = institution
 
     def __repr__(self):
         return '<User %r>' % self.email
@@ -41,6 +47,9 @@ class User(db.Model):
             'email': self.email,
             'created_at': self.created_at,
             'role': self.role,
+            'name': self.name,
+            'country': self.country,
+            'institution': self.institution
         }
         if 'scripts' in include:
             user['scripts'] = self.serialize_scripts
