@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import datetime
 import logging
 import base64
@@ -12,7 +13,7 @@ from uuid import UUID
 
 from gefapi import db
 from gefapi.models import Execution, ExecutionLog
-from gefapi.services import ScriptService, docker_run
+from gefapi.services import ScriptService, docker_run, EmailService, UserService
 from gefapi.config import SETTINGS
 from gefapi.errors import ExecutionNotFound, ScriptNotFound, ScriptStateNotValid
 
@@ -107,6 +108,12 @@ class ExecutionService(object):
             if status == 'FINISHED':
                 execution.end_date = datetime.datetime.utcnow()
                 execution.progress = 100
+                user = UserService.get_user(str(execution.user_id))
+                email = EmailService.send_html_email(
+                    recipients=[user.email],
+                    html='<p>Execution: ' + str(execution.id) + '</p>',
+                    subject='[GEF] Execution Finished'
+                )
         if progress is not None:
             execution.progress = progress
         if results is not None:
