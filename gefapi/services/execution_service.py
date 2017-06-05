@@ -6,6 +6,8 @@ from __future__ import print_function
 
 import datetime
 import logging
+import base64
+import json
 from uuid import UUID
 
 from gefapi import db
@@ -57,8 +59,10 @@ class ExecutionService(object):
         try:
             environment = SETTINGS.get('environment', {})
             environment['EXECUTION_ID'] = execution.id
-            params = dict_to_query(params)
-            docker_run.delay(execution.id, script.slug, environment, params)
+            param_serial = json.dumps(params).encode('utf-8')
+            param_serial = str(base64.b64encode(param_serial)).replace('\'', '')
+            logging.debug(param_serial)
+            docker_run.delay(execution.id, script.slug, environment, param_serial)
         except Exception as e:
             raise e
         return execution

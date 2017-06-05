@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import datetime
 import logging
 import tarfile
 import json
@@ -77,12 +78,11 @@ class ScriptService(object):
             # Updating existing entity
             logging.debug(script_name)
             script.name = script_name
-
+            script.updated_at = datetime.datetime.utcnow()
         # TO DB
         try:
             logging.info('[DB]: ADD')
             db.session.add(script)
-
 
             shutil.move(sent_file_path, os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz'))
             sent_file_path = os.path.join(SETTINGS.get('SCRIPTS_FS'), script.slug+'.tar.gz')
@@ -144,7 +144,8 @@ class ScriptService(object):
         logging.info('[SERVICE]: Getting script logs of script %s: ' % (script_id))
         logging.info('[DB]: QUERY')
         try:
-            script = Script.query.get(script_id)
+            val = UUID(script_id, version=4)
+            script = Script.query.filter_by(id=script_id).first()
         except ValueError:
             script = Script.query.filter_by(slug=script_id).first()
         except Exception as error:

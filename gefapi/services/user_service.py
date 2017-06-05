@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import random
+import datetime
 import string
 import logging
 from uuid import UUID
@@ -25,7 +26,8 @@ class UserService(object):
     def create_user(user):
         logging.info('[SERVICE]: Creating user')
         email = user.get('email', None)
-        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+        password = user.get('password', None)
+        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20)) if password is None else password
         role = user.get('role', 'USER')
         name = user.get('name', 'notset')
         country = user.get('country', None)
@@ -126,6 +128,7 @@ class UserService(object):
         current_user.name = user.get('name', current_user.name)
         current_user.country = user.get('country', current_user.country)
         current_user.institution = user.get('institution', current_user.institution)
+        current_user.updated_at = datetime.datetime.utcnow()
         try:
             logging.info('[DB]: ADD')
             db.session.add(current_user)

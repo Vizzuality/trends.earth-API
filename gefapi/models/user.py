@@ -24,6 +24,7 @@ class User(db.Model):
     institution = db.Column(db.String(120))
     password = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     role = db.Column(db.String(10))
     scripts = db.relationship('Script', backref='user', lazy='dynamic')
     executions = db.relationship('Execution', backref='user', lazy='dynamic')
@@ -45,7 +46,8 @@ class User(db.Model):
         user = {
             'id': self.id,
             'email': self.email,
-            'created_at': self.created_at,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
             'role': self.role,
             'name': self.name,
             'country': self.country,

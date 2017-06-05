@@ -13,7 +13,7 @@ develop:
     EE_SERVICE_ACCOUNT: ${EE_SERVICE_ACCOUNT}
     EE_PRIVATE_KEY: ${EE_PRIVATE_KEY}
     SPARKPOST_API_KEY: ${SPARKPOST_API_KEY}
-    API_URL: mymachine:3000
+    API_URL: http://mymachine:3000
     API_USER: gef@gef.com
     API_PASSWORD: gef
   command: develop
