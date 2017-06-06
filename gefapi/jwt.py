@@ -14,7 +14,7 @@ def authenticate(email, password):
     user = None
     try:
         user = UserService.authenticate_user(user_id=str(email), password=str(password))
-    except Exception:
+    except Exception as e:
         logging.error('[JWT]: Error')
     return user
 
@@ -24,6 +24,7 @@ def identity(payload):
     user = None
     try:
         user = UserService.get_user(user_id=user_id)
-    except Exception:
+    except Exception as e:
+        logging.error(str(e))
         logging.error('[JWT]: Error')
     return user

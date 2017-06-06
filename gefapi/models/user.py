@@ -26,8 +26,14 @@ class User(db.Model):
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     role = db.Column(db.String(10))
-    scripts = db.relationship('Script', backref='user', lazy='dynamic')
-    executions = db.relationship('Execution', backref='user', lazy='dynamic')
+    scripts = db.relationship('Script',
+                              backref=db.backref('user'),
+                              cascade='all, delete-orphan',
+                              lazy='dynamic')
+    executions = db.relationship('Execution',
+                                 backref=db.backref('user'),
+                                 cascade='all, delete-orphan',
+                                 lazy='dynamic')
 
     def __init__(self, email, password, name, country, institution, role='USER'):
         self.email = email

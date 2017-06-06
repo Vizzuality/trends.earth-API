@@ -21,8 +21,14 @@ class Script(db.Model):
     updated_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
     status = db.Column(db.String(80), nullable=False, default='PENDING')
-    logs = db.relationship('ScriptLog', backref='script', lazy='dynamic')
-    executions = db.relationship('Execution', backref='script', lazy='dynamic')
+    logs = db.relationship('ScriptLog',
+                           backref=db.backref('script'),
+                           cascade='all, delete-orphan',
+                           lazy='dynamic')
+    executions = db.relationship('Execution',
+                                 backref=db.backref('script'),
+                                 cascade='all, delete-orphan',
+                                 lazy='dynamic')
     public = db.Column(db.Boolean(), default=False, nullable=False)
 
     def __init__(self, name, slug, user_id):
