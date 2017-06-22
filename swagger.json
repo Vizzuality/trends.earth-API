@@ -291,7 +291,7 @@
       }
     },
     "/script/{script}/run": {
-      "get": {
+      "post": {
         "description": "Run a script. Create an execution",
         "consumes": [
           "application/json"
