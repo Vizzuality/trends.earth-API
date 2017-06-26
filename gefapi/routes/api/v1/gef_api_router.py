@@ -344,7 +344,8 @@ def create_user():
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
     identity = current_identity
-    if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
+    user_role = body.get('role', 'USER')
+    if identity.role == 'USER' and user_role == 'ADMIN':
         return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
