@@ -199,14 +199,16 @@ def delete_script(script):
 
 
 # SCRIPT EXECUTION
-@endpoints.route('/script/<script>/run', strict_slashes=False, methods=['GET'])
+@endpoints.route('/script/<script>/run', strict_slashes=False, methods=['POST'])
 @jwt_required()
 def run_script(script):
     """Run a script"""
     logging.info('[ROUTER]: Running script: '+script)
     user = current_identity
     try:
-        params = request.args.to_dict()
+        params = request.args.to_dict() if request.args else {}
+        if request.get_json(silent=True):
+            params.update(request.get_json())
         if 'token' in params:
             del params['token']
         execution = ExecutionService.create_execution(script, params, user)
@@ -335,14 +337,16 @@ def create_execution_log(execution):
 
 # USER
 @endpoints.route('/user', strict_slashes=False, methods=['POST'])
+@jwt_required()
 @validate_user_creation
 def create_user():
     """Create an user"""
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
-    # identity = current_identity
-    # if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
-    #     return error(status=403, detail='Forbidden')
+    identity = current_identity
+    user_role = body.get('role', 'USER')
+    if identity.role == 'USER' and user_role == 'ADMIN':
+        return error(status=403, detail='Forbidden')
     try:
         user = UserService.create_user(body)
     except UserDuplicated as e:
@@ -466,6 +470,8 @@ def delete_user(user):
     """Delete an user"""
     logging.info('[ROUTER]: Deleting user'+user)
     identity = current_identity
+    if user == 'gef@gef.com':
+        return error(status=403, detail='Forbidden')
     if identity.role != 'ADMIN' and identity.email != 'gef@gef.com':
         return error(status=403, detail='Forbidden')
     try:

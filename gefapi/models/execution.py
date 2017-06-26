@@ -22,7 +22,10 @@ class Execution(db.Model):
     progress = db.Column(db.Integer(), default=0)
     params = db.Column(JSONB, default={})
     results = db.Column(JSONB, default={})
-    logs = db.relationship('ExecutionLog', backref='execution', lazy='dynamic')
+    logs = db.relationship('ExecutionLog',
+                           backref=db.backref('execution'),
+                           cascade='all, delete-orphan',
+                           lazy='dynamic')
     script_id = db.Column(db.GUID(), db.ForeignKey('script.id'))
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
 

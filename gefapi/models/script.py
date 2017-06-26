@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import logging
 import datetime
 import uuid
 
@@ -19,10 +18,17 @@ class Script(db.Model):
     slug = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.Text(), default='')
     created_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     user_id = db.Column(db.GUID(), db.ForeignKey('user.id'))
     status = db.Column(db.String(80), nullable=False, default='PENDING')
-    logs = db.relationship('ScriptLog', backref='script', lazy='dynamic')
-    executions = db.relationship('Execution', backref='script', lazy='dynamic')
+    logs = db.relationship('ScriptLog',
+                           backref=db.backref('script'),
+                           cascade='all, delete-orphan',
+                           lazy='dynamic')
+    executions = db.relationship('Execution',
+                                 backref=db.backref('script'),
+                                 cascade='all, delete-orphan',
+                                 lazy='dynamic')
     public = db.Column(db.Boolean(), default=False, nullable=False)
 
     def __init__(self, name, slug, user_id):
@@ -42,6 +48,7 @@ class Script(db.Model):
             'slug': self.slug,
             'description': self.description,
             'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
             'user_id': self.user_id,
             'status': self.status,
             'public': self.public or False
