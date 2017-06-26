@@ -337,16 +337,23 @@ def create_execution_log(execution):
 
 # USER
 @endpoints.route('/user', strict_slashes=False, methods=['POST'])
-@jwt_required()
 @validate_user_creation
 def create_user():
     """Create an user"""
     logging.info('[ROUTER]: Creating user')
     body = request.get_json()
+    if request.headers.get('Authorization', None) is not None:
+        @jwt_required()
+        def identity():
+            pass
+        identity()
     identity = current_identity
-    user_role = body.get('role', 'USER')
-    if identity.role == 'USER' and user_role == 'ADMIN':
-        return error(status=403, detail='Forbidden')
+    if identity:
+        user_role = body.get('role', 'USER')
+        if identity.role == 'USER' and user_role == 'ADMIN':
+            return error(status=403, detail='Forbidden')
+    else:
+        body['role'] = 'USER'
     try:
         user = UserService.create_user(body)
     except UserDuplicated as e:
