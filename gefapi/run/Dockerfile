@@ -1,4 +1,4 @@
-FROM vizzuality/gef-environment:0.0.5
+FROM vizzuality/gef-environment:0.0.6
 
 
 COPY src /project/gefcore/script
