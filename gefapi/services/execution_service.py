@@ -30,16 +30,35 @@ class ExecutionService(object):
 
 
     @staticmethod
-    def get_executions(user):
+    def get_executions(user, target_user_id=None, updated_at=None):
         logging.info('[SERVICE]: Getting executions')
         logging.info('[DB]: QUERY')
+        if not updated_at:
+            updated_at = datetime.datetime(2000, 12, 1)
+        # Admin
         if user.role == 'ADMIN':
-            executions = Execution.query.all()
+            # Target User
+            if target_user_id:
+                try:
+                    val = UUID(target_user_id, version=4)
+                except Exception as error:
+                    raise error
+                executions = db.session.query(Execution) \
+                    .filter(Execution.user_id == target_user_id) \
+                    .filter(Execution.end_date > updated_at) \
+                    .order_by(Execution.end_date)
+            # All
+            else:
+                executions = Execution.query.filter(Execution.end_date > updated_at).order_by(Execution.end_date).all()
             return executions
+        # ME
         else:
             executions = db.session.query(Execution) \
-                .filter(Execution.user_id == user.id)
+                .filter(Execution.user_id == user.id) \
+                .filter(Execution.end_date > updated_at) \
+                .order_by(Execution.end_date)
             return executions
+
 
     @staticmethod
     def create_execution(script_id, params, user):

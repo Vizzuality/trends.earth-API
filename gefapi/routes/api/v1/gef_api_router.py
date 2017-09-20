@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import dateutil.parser
 import logging
+import datetime
 
 from flask import jsonify, request, send_from_directory, Response, json
 from flask_jwt import jwt_required, current_identity
@@ -229,10 +230,14 @@ def run_script(script):
 def get_executions():
     """Get all executions"""
     logging.info('[ROUTER]: Getting all executions: ')
+    user_id = request.args.get('user_id', None)
+    updated_at = request.args.get('updated_at', None)
+    if updated_at:
+        updated_at = dateutil.parser.parse(updated_at)
     include = request.args.get('include')
     include = include.split(',') if include else []
     try:
-        executions = ExecutionService.get_executions(current_identity)
+        executions = ExecutionService.get_executions(current_identity, user_id, updated_at)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
