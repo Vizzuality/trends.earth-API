@@ -420,14 +420,43 @@ def get_me():
 
 @endpoints.route('/user/me', strict_slashes=False, methods=['PATCH'])
 @jwt_required()
-@validate_profile_update
 def update_profile():
     """Update an user"""
-    logging.info('[ROUTER]: Updating profile profile')
+    logging.info('[ROUTER]: Updating profile')
     body = request.get_json()
     identity = current_identity
     try:
-        user = UserService.update_profile_password(body, identity)
+        password = body.get('password', None)
+        repeat_password = body.get('repeatPassword', None)
+        if password is not None and repeat_password is not None and password == repeat_password:
+            user = UserService.update_profile_password(body, identity)
+        else:
+            if 'role' in body:
+                del body['role']
+            name = body.get('name', None)
+            country = body.get('country', None)
+            institution = body.get('institution', None)
+            if name is not None or country is not None or institution is not None:
+                user = UserService.update_user(body, str(identity.id))
+            else:
+                return error(status=400, detail='Not updated')
+    except UserNotFound as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=404, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data=user.serialize()), 200
+
+
+@endpoints.route('/user/me', strict_slashes=False, methods=['DELETE'])
+@jwt_required()
+def delete_profile():
+    """Delete Me"""
+    logging.info('[ROUTER]: Delete me')
+    identity = current_identity
+    try:
+        user = UserService.delete_user(str(identity.id))
     except UserNotFound as e:
         logging.error('[ROUTER]: '+e.message)
         return error(status=404, detail=e.message)

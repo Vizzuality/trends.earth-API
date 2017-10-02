@@ -124,7 +124,7 @@ class ExecutionService(object):
             raise ExecutionNotFound(message='Execution with id '+execution_id+' does not exist')
         if status is not None:
             execution.status = status
-            if status == 'FINISHED':
+            if status == 'FINISHED' or status == 'FAILED':
                 execution.end_date = datetime.datetime.utcnow()
                 execution.progress = 100
                 user = UserService.get_user(str(execution.user_id))
