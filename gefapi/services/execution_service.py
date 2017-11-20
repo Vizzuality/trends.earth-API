@@ -18,6 +18,18 @@ from gefapi.config import SETTINGS
 from gefapi.errors import ExecutionNotFound, ScriptNotFound, ScriptStateNotValid
 
 
+EXECUTION_FINISHED_MAIL_CONTENT = "<p>Thank you for using the Land Degradation Monitoring Toolbox. The below task has {}. More details on this task are below: </p>\
+                                    <ul><li>Task name: {}</li> \
+                                    <li>Job: {}</li> \
+                                    <li>Task ID: {}</li> \
+                                    <li>Start time: {}</li> \
+                                    <li>End time: {}</li> \
+                                    <li>Status: {}</li></ul> \
+                                    <p>For more information, and to view the results, click the \"See Google Earth Engine tasks\" button in the QGIS plugin.</p> \
+                                    <p>Thank you, </br> \
+                                    The Land Degradation Monitoring Toolbox Team</p>"
+
+
 def dict_to_query(params):
     query = ''
     for key in params.keys():
@@ -128,10 +140,11 @@ class ExecutionService(object):
                 execution.end_date = datetime.datetime.utcnow()
                 execution.progress = 100
                 user = UserService.get_user(str(execution.user_id))
+                script = ScriptService.get_script(str(execution.script_id))
                 email = EmailService.send_html_email(
                     recipients=[user.email],
-                    html='<p>Execution: ' + str(execution.id) + '</p>',
-                    subject='[GEF] Execution Finished'
+                    html=EXECUTION_FINISHED_MAIL_CONTENT.format(status, execution.params.get('task_name'), script.name, str(execution.id), execution.start_date, execution.end_date, status),
+                    subject='[GEF] Execution finished'
                 )
         if progress is not None:
             execution.progress = progress

@@ -110,10 +110,10 @@ class ScriptService(object):
             return scripts
 
     @staticmethod
-    def get_script(script_id, user):
+    def get_script(script_id, user='fromservice'):
         logging.info('[SERVICE]: Getting script: '+script_id)
         logging.info('[DB]: QUERY')
-        if user.role == 'ADMIN':
+        if user == 'fromservice' or user.role == 'ADMIN':
             try:
                 val = UUID(script_id, version=4)
                 script = Script.query.filter_by(id=script_id).first()
