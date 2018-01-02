@@ -161,8 +161,8 @@ def update_script(script):
     if sent_file.filename == '':
         sent_file.filename = 'script'
     user = current_identity
-    if user.role != 'ADMIN' and user.email != 'gef@gef.com':
-        return error(status=403, detail='Forbidden')
+    # if user.role != 'ADMIN' and user.email != 'gef@gef.com':
+    #     return error(status=403, detail='Forbidden')
     try:
         script = ScriptService.update_script(script, sent_file, user)
     except InvalidFile as e:
