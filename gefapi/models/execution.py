@@ -37,9 +37,10 @@ class Execution(db.Model):
     def __repr__(self):
         return '<Execution %r>' % self.id
 
-    def serialize(self, include=None):
+    def serialize(self, include=None, exclude=None):
         """Return object data in easily serializeable format"""
         include = include if include else []
+        exclude = exclude if exclude else []
         end_date_formatted = None
         if self.end_date:
             end_date_formatted = self.end_date.isoformat()
@@ -60,6 +61,10 @@ class Execution(db.Model):
             execution['user'] = self.user.serialize()
         if 'script' in include:
             execution['script'] = self.script.serialize()
+        if 'params' in exclude:
+            del execution['params']
+        if 'results' in exclude:
+            del execution['results']
         return execution
 
     @property

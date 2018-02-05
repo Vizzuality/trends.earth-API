@@ -236,12 +236,14 @@ def get_executions():
         updated_at = dateutil.parser.parse(updated_at)
     include = request.args.get('include')
     include = include.split(',') if include else []
+    exclude = request.args.get('exclude')
+    exclude = exclude.split(',') if exclude else []
     try:
         executions = ExecutionService.get_executions(current_identity, user_id, updated_at)
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=[execution.serialize(include) for execution in executions]), 200
+    return jsonify(data=[execution.serialize(include, exclude) for execution in executions]), 200
 
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['GET'])
@@ -251,6 +253,8 @@ def get_execution(execution):
     logging.info('[ROUTER]: Getting execution: '+execution)
     include = request.args.get('include')
     include = include.split(',') if include else []
+    exclude = request.args.get('exclude')
+    exclude = exclude.split(',') if exclude else []
     try:
         execution = ExecutionService.get_execution(execution, current_identity)
     except ExecutionNotFound as e:
@@ -259,7 +263,7 @@ def get_execution(execution):
     except Exception as e:
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
-    return jsonify(data=execution.serialize(include)), 200
+    return jsonify(data=execution.serialize(include, exclude)), 200
 
 
 @endpoints.route('/execution/<execution>', strict_slashes=False, methods=['PATCH'])
