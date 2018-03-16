@@ -15,7 +15,8 @@ SETTINGS = {
         'SPARKPOST_API_KEY': os.getenv('SPARKPOST_API_KEY'),
         'API_URL': os.getenv('API_URL'),
         'API_USER': os.getenv('API_USER'),
-        'API_PASSWORD': os.getenv('API_PASSWORD')
+        'API_PASSWORD': os.getenv('API_PASSWORD'),
+        'MAX_ELEMENTS_IN_QUEUE': 30
     },
     'ROLES': ['ADMIN', 'USER'],
     'SQLALCHEMY_DATABASE_URI': 'postgresql://'+os.getenv('DATABASE_ENV_POSTGRES_USER')+':'+os.getenv('DATABASE_ENV_POSTGRES_PASSWORD')+'@'+os.getenv('DATABASE_PORT_5432_TCP_ADDR')+':'+os.getenv('DATABASE_PORT_5432_TCP_PORT')+'/'+os.getenv('DATABASE_ENV_POSTGRES_DB'),
@@ -24,6 +25,8 @@ SETTINGS = {
     'REGISTRY_URL': 'localhost:'+os.getenv('REGISTRY_PORT_5000_TCP_PORT', ''),
     'UPLOAD_FOLDER': '/tmp/scripts',
     'ALLOWED_EXTENSIONS': set(['tar.gz']),
+    'MAX_CONTENT_LENGTH': 100,
+    'GCS_BUCKET': 'trendsearth_uploads',
     'JWT_AUTH_USERNAME_KEY': 'email',
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_EXPIRATION_DELTA': timedelta(seconds=60*60*24),

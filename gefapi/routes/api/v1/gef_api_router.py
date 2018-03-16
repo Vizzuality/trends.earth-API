@@ -15,9 +15,9 @@ from gefapi.routes.api.v1 import endpoints, error
 from gefapi.validators import validate_user_creation, validate_user_update, \
     validate_file, validate_execution_update, validate_execution_log_creation, \
     validate_profile_update
-from gefapi.services import UserService, ScriptService, ExecutionService
+from gefapi.services import UserService, ScriptService, ExecutionService, DatasetService
 from gefapi.errors import UserNotFound, UserDuplicated, InvalidFile, ScriptNotFound, \
-    ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid, EmailError
+    ScriptDuplicated, NotAllowed, ExecutionNotFound, ScriptStateNotValid, EmailError, StorageError
 
 
 # SCRIPT CREATION
@@ -342,6 +342,33 @@ def create_execution_log(execution):
         logging.error('[ROUTER]: '+str(e))
         return error(status=500, detail='Generic Error')
     return jsonify(data=log.serialize()), 200
+
+
+# DATASET CREATION
+@endpoints.route('/dataset', strict_slashes=False, methods=['POST'])
+@jwt_required()
+@validate_file
+def create_dataset():
+    """
+    Create a new dataset
+    """
+    logging.info('[ROUTER]: Creating a dataset')
+    sent_file = request.files.get('file')
+    if sent_file.filename == '':
+        sent_file.filename = 'dataset'
+    user = current_identity
+    try:
+        dataset = DatasetService.create_dataset(sent_file, user)
+    except InvalidFile as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
+    except StorageError as e:
+        logging.error('[ROUTER]: '+e.message)
+        return error(status=400, detail=e.message)
+    except Exception as e:
+        logging.error('[ROUTER]: '+str(e))
+        return error(status=500, detail='Generic Error')
+    return jsonify(data={'dataset': dataset}), 200
 
 
 # USER

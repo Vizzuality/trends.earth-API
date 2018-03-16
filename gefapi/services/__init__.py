@@ -9,3 +9,5 @@ from gefapi.services.email_service import EmailService
 from gefapi.services.script_service import ScriptService
 from gefapi.services.user_service import UserService
 from gefapi.services.execution_service import ExecutionService
+from gefapi.services.storage_service import StorageService
+from gefapi.services.dataset_service import DatasetService

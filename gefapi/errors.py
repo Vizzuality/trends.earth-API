@@ -51,3 +51,7 @@ class ScriptStateNotValid(Error):
 
 class EmailError(Error):
     pass
+
+
+class StorageError(Error):
+    pass

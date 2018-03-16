@@ -15,6 +15,8 @@ from flask_cors import CORS, cross_origin
 from gefapi.config import SETTINGS
 from gefapi.celery import make_celery
 
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 logging.basicConfig(
     level=SETTINGS.get('logging', {}).get('level'),
@@ -31,6 +33,7 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = SETTINGS.get('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = SETTINGS.get('SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = SETTINGS.get('UPLOAD_FOLDER')
+app.config['MAX_CONTENT_LENGTH'] = SETTINGS.get('MAX_CONTENT_LENGTH') * 1024 * 1024
 app.config['JWT_AUTH_USERNAME_KEY'] = SETTINGS.get('JWT_AUTH_USERNAME_KEY')
 app.config['JWT_AUTH_HEADER_PREFIX'] = SETTINGS.get('JWT_AUTH_HEADER_PREFIX')
 app.config['JWT_EXPIRATION_DELTA'] = SETTINGS.get('JWT_EXPIRATION_DELTA')
