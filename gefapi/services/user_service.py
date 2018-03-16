@@ -27,7 +27,7 @@ class UserService(object):
         logging.info('[SERVICE]: Creating user')
         email = user.get('email', None)
         password = user.get('password', None)
-        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20)) if password is None else password
+        password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6)) if password is None else password
         role = user.get('role', 'USER')
         name = user.get('name', 'notset')
         country = user.get('country', None)
